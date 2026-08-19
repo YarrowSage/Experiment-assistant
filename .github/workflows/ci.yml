@@ -34,6 +34,9 @@ jobs:
       - name: Type-check web application
         run: pnpm typecheck:web
 
+      - name: Test web application
+        run: pnpm test:web
+
       - name: Build web application
         run: pnpm build:web
 

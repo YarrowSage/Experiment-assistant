@@ -3,8 +3,9 @@
 A modular, multi-device laboratory planning, execution, recording, management,
 and analysis assistant for scientific research.
 
-> Current status: Phase 1 is active. P1-01 establishes the web/API development
-> foundation only. No Project, Protocol, ExperimentRun, Workspace UI, or other
+> Current status: Phase 1 is active. P1-01 established the web/API development
+> foundation, and P1-02 adds the responsive product shell and shared UI
+> foundations. No Project, Protocol, ExperimentRun, Workspace UI, or other
 > business workflow is implemented yet.
 
 ## Vision
@@ -114,7 +115,8 @@ reviewed migration.
 
 ## Current Limitations
 
-- The web page is a foundation readiness screen, not the Phase 1 product shell.
+- The web application contains responsive shell routes and honest future-module
+  placeholders, but no business workflow or persisted product record.
 - There are no business APIs or database tables.
 - SQLite is for early local, single-process development only.
 - Authentication, synchronization, uploads, PWA installability, deployment,
