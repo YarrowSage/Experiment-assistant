@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -15,8 +15,14 @@ const mocks = vi.hoisted(() => ({
   startRunExecution: vi.fn(),
   startRunStep: vi.fn(),
 }));
+const amendmentMocks = vi.hoisted(() => ({
+  completeExperiment: vi.fn(),
+  createAmendment: vi.fn(),
+  listAmendments: vi.fn(),
+}));
 
 vi.mock("./api", () => mocks);
+vi.mock("@/features/amendments/api", () => amendmentMocks);
 vi.mock("@/features/evidence/evidence-panel", () => ({
   EvidencePanel: () => <div>Evidence panel</div>,
 }));
@@ -65,7 +71,10 @@ const step: RunStepRecord = {
 };
 
 describe("ExecutionPanel", () => {
-  beforeEach(() => { vi.clearAllMocks(); });
+  beforeEach(() => {
+    vi.clearAllMocks();
+    amendmentMocks.listAmendments.mockResolvedValue([]);
+  });
 
   it("starts a ready Experiment through the persisted execution API", async () => {
     const user = userEvent.setup();
@@ -97,5 +106,47 @@ describe("ExecutionPanel", () => {
     expect(screen.getByRole("button", { name: "Complete Step" })).toBeEnabled();
     expect(mocks.completeRunStep).not.toHaveBeenCalled();
     vi.useRealTimers();
+  });
+
+  it("requires acknowledgement before completing with a required step unfinished", async () => {
+    const user = userEvent.setup();
+    const inProgress: RunExecution = {
+      run: { ...run, status: "in_progress", actual_start_at: "2026-08-19T09:00:00Z", revision: 3 },
+      steps: [step],
+    };
+    const completed: RunExecution = {
+      run: { ...inProgress.run, status: "completed", actual_end_at: "2026-08-19T10:00:00Z", completed_at: "2026-08-19T10:00:00Z", revision: 4 },
+      steps: [step],
+    };
+    mocks.getRunExecution.mockResolvedValue(inProgress);
+    amendmentMocks.completeExperiment.mockResolvedValue(completed);
+    const onRunChanged = vi.fn();
+    render(<ExecutionPanel run={inProgress.run} onRunChanged={onRunChanged} />);
+
+    await user.click(await screen.findByRole("button", { name: "Complete Experiment" }));
+    expect(screen.getByText("1 required step is incomplete")).toBeInTheDocument();
+    const dialog = screen.getByRole("dialog");
+    await user.click(within(dialog).getByRole("button", { name: "Complete Experiment" }));
+    expect(await screen.findByText("Acknowledge the incomplete required steps before continuing.")).toBeInTheDocument();
+    expect(amendmentMocks.completeExperiment).not.toHaveBeenCalled();
+
+    await user.click(screen.getByRole("checkbox"));
+    await user.click(within(dialog).getByRole("button", { name: "Complete Experiment" }));
+    await waitFor(() => expect(amendmentMocks.completeExperiment).toHaveBeenCalledWith(run.id, 3, "", true));
+    expect(onRunChanged).toHaveBeenCalledWith(completed.run);
+  });
+
+  it("shows a completed Experiment as read-only while keeping its evidence and amendment history visible", async () => {
+    const completed: RunExecution = {
+      run: { ...run, status: "completed", actual_start_at: "2026-08-19T09:00:00Z", actual_end_at: "2026-08-19T10:00:00Z", completed_at: "2026-08-19T10:00:00Z", revision: 4 },
+      steps: [{ ...step, status: "completed", actual_start_at: "2026-08-19T09:00:00Z", actual_end_at: "2026-08-19T09:01:00Z", completed_at: "2026-08-19T09:01:00Z", revision: 3 }],
+    };
+    mocks.getRunExecution.mockResolvedValue(completed);
+    render(<ExecutionPanel run={completed.run} onRunChanged={vi.fn()} />);
+    expect(await screen.findByRole("heading", { name: "Experiment completed" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Start Step" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Complete Step" })).not.toBeInTheDocument();
+    expect(screen.getByText("Evidence panel")).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Corrections and amendments" })).toBeInTheDocument();
   });
 });

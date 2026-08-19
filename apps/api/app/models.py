@@ -1,5 +1,6 @@
 """Import domain models so Alembic can discover shared metadata."""
 
+from app.amendments.models import Amendment
 from app.evidence.models import (
     ActivityEvent,
     ExperimentRunAttachment,
@@ -14,6 +15,7 @@ from app.protocols.models import Protocol, ProtocolStep, ProtocolSubStep, Protoc
 from app.workspaces.models import Workspace
 
 __all__ = [
+    "Amendment",
     "ExperimentRun",
     "ExperimentRunAttachment",
     "FileAttachment",

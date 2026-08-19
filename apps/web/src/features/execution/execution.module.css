@@ -9,6 +9,8 @@
 .requestError, .feedback, .pausedNotice { margin: 0; padding: var(--space-3) var(--space-4); border-radius: var(--radius-control); }
 .requestError { color: var(--color-danger); border: 1px solid #f3caca; background: var(--color-danger-soft); }
 .feedback { color: var(--color-success); border: 1px solid #bfe4ca; background: #f1faf4; }
+.completionNote { display: grid; gap: var(--space-2); }
+.completionNote p { margin: 0; color: var(--color-text-secondary); white-space: pre-wrap; }
 .currentStep { border-color: color-mix(in srgb, var(--color-accent) 22%, var(--color-border)); box-shadow: var(--shadow-sm); }
 .currentTitle { display: grid; gap: var(--space-1); }
 .currentTitle > span { color: var(--color-accent-text); font-size: var(--font-size-sm); font-weight: 700; }

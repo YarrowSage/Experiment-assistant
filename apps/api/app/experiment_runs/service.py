@@ -3,6 +3,7 @@ from uuid import UUID
 
 from sqlalchemy.orm import Session
 
+from app.amendments.errors import CompletedRecordProtectedError
 from app.evidence.activity import ActivityRecorder
 from app.evidence.domain import ActivityType
 from app.experiment_runs.domain import (
@@ -112,6 +113,8 @@ class ExperimentRunService:
     def update(self, run_id: UUID, payload: ExperimentRunUpdate) -> ExperimentRun:
         current = self.get(run_id)
         self._require_revision(current, payload.expected_revision)
+        if ExperimentRunStatus(current.status) is ExperimentRunStatus.COMPLETED:
+            raise CompletedRecordProtectedError
         values = payload.model_dump(exclude={"expected_revision"}, exclude_unset=True)
         if (
             "protocol_version_id" in values

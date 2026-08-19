@@ -3,6 +3,7 @@ from uuid import UUID, uuid4
 
 from sqlalchemy.orm import Session
 
+from app.amendments.errors import CompletedRecordProtectedError
 from app.evidence.activity import ActivityRecorder
 from app.evidence.domain import ActivityType, AttachmentState
 from app.evidence.errors import (
@@ -84,16 +85,17 @@ class EvidenceService:
             raise NoteNotFoundError(note_id)
         if current.revision != payload.expected_revision:
             raise EvidenceRevisionConflictError
+        run = self.runs.get(self.workspace_id, current.experiment_run_id)
+        if run is None:
+            raise EvidenceContextNotFoundError
+        if run.status == "completed":
+            raise CompletedRecordProtectedError
         updated = self.repository.compare_and_swap_note(
             self.workspace_id, note_id, payload.expected_revision, payload.content or ""
         )
         if updated is None:
             self.session.rollback()
             raise EvidenceRevisionConflictError
-        run = self.runs.get(self.workspace_id, updated.experiment_run_id)
-        if run is None:
-            self.session.rollback()
-            raise EvidenceContextNotFoundError
         self.activity.record(
             ActivityType.NOTE_UPDATED,
             "Execution note updated.",

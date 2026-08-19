@@ -8,6 +8,7 @@ from fastapi.responses import StreamingResponse
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
+from app.amendments.errors import CompletedRecordProtectedError
 from app.core.database import get_db
 from app.evidence.errors import (
     AttachmentNotFoundError,
@@ -50,6 +51,7 @@ EVIDENCE_ERRORS = (
     AttachmentNotFoundError,
     EvidenceRevisionConflictError,
     AttachmentStorageError,
+    CompletedRecordProtectedError,
 )
 
 
@@ -58,7 +60,7 @@ def raise_evidence_http_error(error: Exception) -> NoReturn:
         error, (EvidenceContextNotFoundError, NoteNotFoundError, AttachmentNotFoundError)
     ):
         status_code = status.HTTP_404_NOT_FOUND
-    elif isinstance(error, EvidenceRevisionConflictError):
+    elif isinstance(error, (EvidenceRevisionConflictError, CompletedRecordProtectedError)):
         status_code = status.HTTP_409_CONFLICT
     else:
         status_code = status.HTTP_422_UNPROCESSABLE_CONTENT

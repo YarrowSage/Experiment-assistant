@@ -25,6 +25,7 @@ def test_clean_upgrade_downgrade_and_reupgrade(tmp_path: Path) -> None:
     expected_tables = {
         "alembic_version",
         "activity_events",
+        "amendments",
         "experiment_runs",
         "experiment_run_attachments",
         "file_attachments",

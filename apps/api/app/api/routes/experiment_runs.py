@@ -5,6 +5,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
+from app.amendments.errors import CompletedRecordProtectedError
 from app.core.database import get_db
 from app.experiment_runs.domain import ExperimentRunStatus
 from app.experiment_runs.errors import (
@@ -44,6 +45,7 @@ def raise_experiment_run_http_error(error: Exception) -> NoReturn:
             ExperimentRunProjectConflictError,
             ExperimentRunRevisionConflictError,
             ExperimentRunStateConflictError,
+            CompletedRecordProtectedError,
         ),
     ):
         status_code = status.HTTP_409_CONFLICT
@@ -121,6 +123,7 @@ def update_experiment_run(
         ExperimentRunNotFoundError,
         ExperimentRunRevisionConflictError,
         ExperimentRunStateConflictError,
+        CompletedRecordProtectedError,
     ) as error:
         raise_experiment_run_http_error(error)
     return ExperimentRunResponse.model_validate(run)
