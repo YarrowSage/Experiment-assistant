@@ -1,6 +1,7 @@
 # Phase 1 Repository Audit and Issue Plan
 
-Status: Audit complete; P1-01 is the only issue authorized for implementation
+Status: Audit complete; implementation authorization now follows the reviewed
+GitHub issue sequence and explicit user approval
 Audit baseline: `main` at `c6b8f71e7022705a87b389d68f9bac67e144d151`
 Audit date: 2026-08-19
 
@@ -129,3 +130,10 @@ foundation change.
   test, and migration-configuration checks.
 
 These choices implement, rather than redesign, the accepted Phase 0 direction.
+
+## 8. P1-03 Status Vocabulary Note
+
+Issue #4 and its accepted implementation instruction freeze Project statuses as
+`planning`, `active`, `paused`, `completed`, and `archived`. This supersedes the
+older conceptual `on_hold` proposal in `DATA_MODEL.md`; P1-03 does not implement
+both spellings or silently map between them.

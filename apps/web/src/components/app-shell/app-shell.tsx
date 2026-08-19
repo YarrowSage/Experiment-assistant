@@ -220,7 +220,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       </Dialog>
 
       <Dialog
-        description="Creation actions will be connected by their own reviewed product issues."
+        description="Project creation is available; other record types remain planned."
         footer={
           <Button variant="secondary" onClick={() => setDialog(null)}>
             Close
@@ -231,12 +231,19 @@ export function AppShell({ children }: { children: ReactNode }) {
         onOpenChange={(open) => setDialog(open ? "new" : null)}
       >
         <p className={styles.modalCopy}>
-          This is the shared action shell only. Project and experiment creation are intentionally not
-          implemented in P1-02.
+          Create and manage real Projects from the Projects area. Experiment and Protocol creation
+          will appear only after their domain work is reviewed.
         </p>
         <div className={styles.modalNotice}>
-          <strong>Planned capability</strong>
-          <p>Creation flows will appear here only after their domain and API work is reviewed.</p>
+          <strong>Project creation is available</strong>
+          <p>The New Project form writes through the versioned API to the Default Workspace.</p>
+          <Link
+            className={styles.modalActionLink}
+            href="/experiments/projects"
+            onClick={() => setDialog(null)}
+          >
+            Open Projects
+          </Link>
         </div>
       </Dialog>
 

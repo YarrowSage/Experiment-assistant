@@ -47,7 +47,27 @@ describe("secondary navigation", () => {
   });
 
   it("keeps the Experiments shell limited to its accepted top-level areas", () => {
-    expect(labelsFor("/experiments")).toEqual(["Projects", "All Experiments"]);
+    const navigation = resolveSecondaryNavigation("/experiments/projects");
+    expect(navigation?.items.map((item) => item.label)).toEqual(["Projects", "All Experiments"]);
+    expect(navigation?.items[0]).toEqual({
+      href: "/experiments/projects",
+      label: "Projects",
+    });
+    expect(navigation?.items[1]).toEqual({ label: "All Experiments" });
+  });
+
+  it("provides the frozen contextual navigation for a specific Project", () => {
+    const navigation = resolveSecondaryNavigation("/experiments/projects/project-1");
+    expect(navigation?.title).toBe("Project");
+    expect(navigation?.items.map((item) => item.label)).toEqual([
+      "Overview",
+      "Experiments",
+      "Protocols",
+      "Planner",
+      "Files",
+      "Analysis",
+    ]);
+    expect(navigation?.items[0]?.href).toBe("/experiments/projects/project-1");
   });
 
   it("prefers a more specific contextual rule over its module fallback", () => {

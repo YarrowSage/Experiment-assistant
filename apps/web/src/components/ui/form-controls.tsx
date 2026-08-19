@@ -3,6 +3,7 @@ import {
   useId,
   type InputHTMLAttributes,
   type ReactNode,
+  type SelectHTMLAttributes,
   type TextareaHTMLAttributes,
 } from "react";
 
@@ -36,6 +37,19 @@ export const Textarea = forwardRef<
     />
   );
 });
+
+export const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSelectElement>>(
+  function Select({ "aria-invalid": ariaInvalid, className, ...props }, ref) {
+    return (
+      <select
+        ref={ref}
+        aria-invalid={ariaInvalid}
+        className={classNames(styles.select, ariaInvalid === true && styles.selectError, className)}
+        {...props}
+      />
+    );
+  },
+);
 
 type FieldProps = {
   children: (controlProps: {
