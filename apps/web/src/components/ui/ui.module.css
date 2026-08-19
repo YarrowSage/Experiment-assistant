@@ -23,6 +23,7 @@
 
 .button:focus-visible,
 .input:focus-visible,
+.select:focus-visible,
 .textarea:focus-visible,
 .tab:focus-visible,
 .dialogClose:focus-visible {
@@ -190,6 +191,7 @@
 }
 
 .input,
+.select,
 .textarea {
   width: 100%;
   min-height: 44px;
@@ -214,11 +216,13 @@
 }
 
 .input:hover:not(:disabled),
+.select:hover:not(:disabled),
 .textarea:hover:not(:disabled) {
   border-color: #bcc1c9;
 }
 
 .input:disabled,
+.select:disabled,
 .textarea:disabled {
   cursor: not-allowed;
   background: #f3f4f6;
@@ -226,6 +230,7 @@
 }
 
 .inputError,
+.selectError,
 .textareaError {
   border-color: var(--color-danger);
 }

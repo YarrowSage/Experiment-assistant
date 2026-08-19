@@ -72,6 +72,7 @@ jobs:
 
       - name: Verify Alembic configuration
         run: |
+          uv run --locked alembic upgrade head
           uv run --locked alembic check
           uv run --locked alembic heads
           uv run --locked alembic current

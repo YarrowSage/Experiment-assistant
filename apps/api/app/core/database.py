@@ -2,6 +2,7 @@ from collections.abc import Generator
 from pathlib import Path
 from typing import Any
 
+from fastapi import Request
 from sqlalchemy import Engine, create_engine, event
 from sqlalchemy.engine import URL, make_url
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
@@ -35,10 +36,15 @@ def create_database_engine(database_url: str) -> Engine:
 
 
 engine = create_database_engine(get_settings().database_url)
-SessionLocal = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False)
+SessionLocal: sessionmaker[Session] = sessionmaker(
+    bind=engine, autoflush=False, expire_on_commit=False
+)
 
 
-def get_db() -> Generator[Session, None, None]:
-    ensure_sqlite_directory(engine.url)
-    with SessionLocal() as session:
+def get_db(request: Request) -> Generator[Session, None, None]:
+    session_factory: sessionmaker[Session] = request.app.state.session_factory
+    bound_engine = session_factory.kw.get("bind")
+    if isinstance(bound_engine, Engine):
+        ensure_sqlite_directory(bound_engine.url)
+    with session_factory() as session:
         yield session

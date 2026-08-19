@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AppShell } from "./app-shell";
 
-const navigationState = vi.hoisted(() => ({ pathname: "/experiments" }));
+const navigationState = vi.hoisted(() => ({ pathname: "/experiments/projects" }));
 
 vi.mock("next/navigation", () => ({
   usePathname: () => navigationState.pathname,
@@ -12,7 +12,7 @@ vi.mock("next/navigation", () => ({
 
 describe("AppShell", () => {
   beforeEach(() => {
-    navigationState.pathname = "/experiments";
+    navigationState.pathname = "/experiments/projects";
   });
 
   it("exposes primary, contextual, and mobile navigation semantics", () => {
@@ -29,7 +29,7 @@ describe("AppShell", () => {
       "aria-current",
       "page",
     );
-    expect(screen.getAllByText("Planned")).toHaveLength(2);
+    expect(screen.getAllByText("Planned")).toHaveLength(1);
     expect(screen.getByRole("main")).toHaveTextContent("Experiments content");
   });
 
@@ -50,7 +50,7 @@ describe("AppShell", () => {
     );
   });
 
-  it("labels unfinished create behavior honestly", async () => {
+  it("links the global create shell to implemented Project creation", async () => {
     const user = userEvent.setup();
     render(
       <AppShell>
@@ -60,7 +60,11 @@ describe("AppShell", () => {
 
     await user.click(screen.getByRole("button", { name: "New" }));
     expect(screen.getByRole("dialog", { name: "Create new" })).toHaveTextContent(
-      "Project and experiment creation are intentionally not implemented in P1-02",
+      "Project creation is available",
+    );
+    expect(screen.getByRole("link", { name: "Open Projects" })).toHaveAttribute(
+      "href",
+      "/experiments/projects",
     );
   });
 

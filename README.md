@@ -3,10 +3,10 @@
 A modular, multi-device laboratory planning, execution, recording, management,
 and analysis assistant for scientific research.
 
-> Current status: Phase 1 is active. P1-01 established the web/API development
-> foundation, and P1-02 adds the responsive product shell and shared UI
-> foundations. No Project, Protocol, ExperimentRun, Workspace UI, or other
-> business workflow is implemented yet.
+> Current status: Phase 1 is active. P1-01 established the web/API foundation,
+> P1-02 added the responsive product shell, and P1-03 implements the Default
+> Workspace ownership boundary plus API-backed Project management. Protocols,
+> ExperimentRuns, Workspace UI, and later scientific workflows remain planned.
 
 ## Vision
 
@@ -55,6 +55,9 @@ pnpm install
 Copy-Item apps/web/.env.example apps/web/.env.local
 Copy-Item apps/api/.env.example apps/api/.env
 uv sync --project apps/api --locked --all-groups
+Set-Location apps/api
+uv run alembic upgrade head
+Set-Location ../..
 ```
 
 The example configuration contains no secret. Local `.env` files, virtual
@@ -85,9 +88,21 @@ Useful API URLs:
 - health: <http://localhost:8000/api/v1/health>
 - database readiness: <http://localhost:8000/api/v1/ready>
 - interactive API documentation: <http://localhost:8000/docs>
+- Projects: <http://localhost:8000/api/v1/projects>
 
 The health endpoint checks the API process. The readiness endpoint separately
-executes a database query so infrastructure failures are visible.
+executes a database query so infrastructure failures are visible. The migration
+creates one stable Default Workspace; application startup verifies it
+idempotently. There is intentionally no Workspace selector or account system.
+
+Project endpoints are versioned under `/api/v1/projects` and support create,
+list/filter, read, revision-checked update, and archive. Projects are never hard
+deleted. The web Project interface is available at
+<http://localhost:3000/experiments/projects>.
+
+The implemented Project lifecycle is `planning`, `active`, `paused`,
+`completed`, and `archived`. The frozen `paused` value supersedes the older
+Phase 0 `on_hold` proposal.
 
 ## Checks
 
@@ -109,15 +124,24 @@ uv run alembic heads
 uv run alembic current
 ```
 
-Alembic is configured, but P1-01 intentionally creates no database revision or
-business table. The first accepted business schema will introduce the first
-reviewed migration.
+To validate the first business migration manually on disposable local data:
+
+```powershell
+uv run alembic upgrade head
+uv run alembic downgrade base
+uv run alembic upgrade head
+```
+
+Do not downgrade a database containing meaningful records without a reviewed
+backup and rollback plan.
 
 ## Current Limitations
 
-- The web application contains responsive shell routes and honest future-module
-  placeholders, but no business workflow or persisted product record.
-- There are no business APIs or database tables.
+- Project management is the only implemented business domain. All Projects
+  belong to the automatic Default Workspace.
+- All Experiments, project Protocols, Planner, Files, and Analysis remain
+  honestly marked as planned.
+- Workspace accounts, membership, permissions, and Workspace UI do not exist.
 - SQLite is for early local, single-process development only.
 - Authentication, synchronization, uploads, PWA installability, deployment,
   and all scientific workflows remain planned.

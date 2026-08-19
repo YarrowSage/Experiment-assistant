@@ -10,10 +10,13 @@ export type SecondaryNavigationConfig = {
 
 export type SecondaryNavigationRule = {
   matchPrefix: string;
-  navigation: SecondaryNavigationConfig;
+  navigation:
+    | SecondaryNavigationConfig
+    | ((pathname: string) => SecondaryNavigationConfig);
 };
 
 function matchesModule(pathname: string, modulePath: string) {
+  if (modulePath.endsWith("/")) return pathname.startsWith(modulePath);
   return pathname === modulePath || pathname.startsWith(`${modulePath}/`);
 }
 
@@ -28,9 +31,29 @@ function createModuleRule(
 }
 
 export const secondaryNavigationRules: readonly SecondaryNavigationRule[] = [
+  {
+    matchPrefix: "/experiments/projects/",
+    navigation: (pathname) => {
+      const projectPath = pathname.split("/").slice(0, 4).join("/");
+      return {
+        title: "Project",
+        items: [
+          { href: projectPath, label: "Overview" },
+          { label: "Experiments" },
+          { label: "Protocols" },
+          { label: "Planner" },
+          { label: "Files" },
+          { label: "Analysis" },
+        ],
+      };
+    },
+  },
   createModuleRule("/experiments", {
     title: "Experiments",
-    items: [{ label: "Projects" }, { label: "All Experiments" }],
+    items: [
+      { href: "/experiments/projects", label: "Projects" },
+      { label: "All Experiments" },
+    ],
   }),
   createModuleRule("/workbenches", {
     title: "Workbenches",
@@ -78,5 +101,8 @@ export function resolveSecondaryNavigation(
     undefined,
   );
 
-  return mostSpecificRule?.navigation;
+  if (!mostSpecificRule) return undefined;
+  return typeof mostSpecificRule.navigation === "function"
+    ? mostSpecificRule.navigation(pathname)
+    : mostSpecificRule.navigation;
 }

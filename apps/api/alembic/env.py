@@ -9,6 +9,7 @@ from alembic import context
 API_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(API_ROOT))
 
+import app.models  # noqa: E402, F401
 from app.core.config import get_settings  # noqa: E402
 from app.core.database import Base, ensure_sqlite_directory  # noqa: E402
 
@@ -16,7 +17,8 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-config.set_main_option("sqlalchemy.url", get_settings().database_url.replace("%", "%%"))
+database_url = config.attributes.get("database_url", get_settings().database_url)
+config.set_main_option("sqlalchemy.url", str(database_url).replace("%", "%%"))
 target_metadata = Base.metadata
 
 
