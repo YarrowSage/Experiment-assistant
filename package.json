@@ -11,6 +11,7 @@
     "build:web": "pnpm --filter @experiment-assistant/web build",
     "lint:web": "pnpm --filter @experiment-assistant/web lint",
     "typecheck:web": "pnpm --filter @experiment-assistant/web typecheck",
-    "check:web": "pnpm lint:web && pnpm typecheck:web && pnpm build:web"
+    "test:web": "pnpm --filter @experiment-assistant/web test",
+    "check:web": "pnpm lint:web && pnpm typecheck:web && pnpm test:web && pnpm build:web"
   }
 }

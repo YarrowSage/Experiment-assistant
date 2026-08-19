@@ -1,0 +1,86 @@
+.pageStack {
+  display: grid;
+  gap: clamp(var(--space-8), 5vw, var(--space-10));
+}
+
+.twoColumnGrid,
+.overviewGrid,
+.resourceGrid {
+  display: grid;
+  gap: var(--space-5);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.workbenchCard {
+  min-height: 15rem;
+}
+
+.workbenchHeader {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.workbenchIcon,
+.foundationIcon,
+.resourceIcon {
+  display: grid;
+  width: 46px;
+  height: 46px;
+  flex: 0 0 auto;
+  place-items: center;
+  color: var(--color-text-secondary);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: 14px;
+  background: var(--color-surface-subtle);
+}
+
+.workbenchBody {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.workbenchBody p,
+.resourceCopy {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.foundationCard {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.foundationIcon {
+  color: var(--color-accent);
+  border-color: #d8eaff;
+  background: var(--color-accent-soft);
+}
+
+.resourceHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.resourceCopy {
+  margin-top: var(--space-4);
+}
+
+@media (max-width: 63.99rem) {
+  .overviewGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 47.99rem) {
+  .twoColumnGrid,
+  .overviewGrid,
+  .resourceGrid {
+    grid-template-columns: 1fr;
+  }
+}

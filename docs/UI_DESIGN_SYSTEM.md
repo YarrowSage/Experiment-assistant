@@ -1,6 +1,6 @@
 # UI Design System
 
-Status: Accepted Phase 0 direction; no UI components are implemented
+Status: Accepted Phase 0 direction; P1-02 shared UI and app-shell foundations implemented
 Last reviewed: 2026-08-19
 
 ## 1. Design Intent
