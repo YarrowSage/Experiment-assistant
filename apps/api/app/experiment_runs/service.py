@@ -24,6 +24,8 @@ from app.experiment_runs.schemas import (
 )
 from app.projects.domain import ProjectStatus
 from app.projects.repository import ProjectRepository
+from app.protocols.domain import ProtocolVersionStatus
+from app.protocols.repository import ProtocolRepository
 from app.workspaces.domain import DEFAULT_WORKSPACE_ID, utc_now
 
 
@@ -33,6 +35,7 @@ class ExperimentRunService:
         self.workspace_id = workspace_id
         self.repository = ExperimentRunRepository(session)
         self.projects = ProjectRepository(session)
+        self.protocols = ProtocolRepository(session)
 
     def create(self, payload: ExperimentRunCreate) -> ExperimentRun:
         project = self.projects.get(self.workspace_id, payload.project_id)
@@ -42,10 +45,12 @@ class ExperimentRunService:
             raise ExperimentRunProjectConflictError(
                 "Archived Projects cannot receive new Experiments."
             )
+        self._validate_protocol_version(payload.project_id, payload.protocol_version_id)
 
         now = utc_now()
         run = ExperimentRun(
             project_id=payload.project_id,
+            protocol_version_id=payload.protocol_version_id,
             title=payload.title,
             description=payload.description,
             purpose=payload.purpose,
@@ -99,6 +104,19 @@ class ExperimentRunService:
         current = self.get(run_id)
         self._require_revision(current, payload.expected_revision)
         values = payload.model_dump(exclude={"expected_revision"}, exclude_unset=True)
+        if (
+            "protocol_version_id" in values
+            and values["protocol_version_id"] != current.protocol_version_id
+        ):
+            if ExperimentRunStatus(current.status) not in {
+                ExperimentRunStatus.DRAFT,
+                ExperimentRunStatus.PLANNED,
+                ExperimentRunStatus.READY,
+            }:
+                raise ExperimentRunStateConflictError(
+                    "The exact Protocol Version cannot change after execution begins."
+                )
+            self._validate_protocol_version(current.project_id, values["protocol_version_id"])
         target_status = ExperimentRunStatus(values.get("status", current.status))
         try:
             validate_run_transition(ExperimentRunStatus(current.status), target_status)
@@ -152,3 +170,18 @@ class ExperimentRunService:
     def _require_revision(run: ExperimentRun, expected_revision: int) -> None:
         if run.revision != expected_revision:
             raise ExperimentRunRevisionConflictError
+
+    def _validate_protocol_version(
+        self, project_id: UUID, protocol_version_id: UUID | None
+    ) -> None:
+        if protocol_version_id is None:
+            return
+        version = self.protocols.get_version(self.workspace_id, protocol_version_id)
+        if version is None or version.protocol.project_id != project_id:
+            raise ExperimentRunProjectConflictError(
+                "The selected Protocol Version does not belong to this Project."
+            )
+        if ProtocolVersionStatus(version.status) is not ProtocolVersionStatus.PUBLISHED:
+            raise ExperimentRunStateConflictError(
+                "New Experiments can use only an exact published Protocol Version."
+            )

@@ -190,8 +190,9 @@ export function ProjectOverview({ projectId }: { projectId: string }) {
           <div>
             <h2>Project workflows</h2>
             <p>
-              Experiments are now available from the Project navigation. Protocols, Planner,
-              Files, and Analysis remain planned and no records are invented here.
+              Experiments and immutable Protocol versions are available from the Project
+              navigation. Planner, Files, and Analysis remain planned and no records are invented
+              here.
             </p>
           </div>
         </div>

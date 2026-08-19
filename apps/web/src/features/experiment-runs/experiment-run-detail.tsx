@@ -1,12 +1,15 @@
 "use client";
 
 import { Archive, CalendarClock, Pencil, Timer } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
 import { Button, Card, CardContent, CardHeader, CardTitle, ErrorState, LoadingState, PageHeader } from "@/components/ui";
 import { listProjects } from "@/features/projects/api";
 import type { Project } from "@/features/projects/types";
+import { listProtocols } from "@/features/protocols/api";
+import { protocolVersionLabel, type Protocol } from "@/features/protocols/types";
 
 import { getExperimentRun } from "./api";
 import { ArchiveExperimentRunDialog } from "./archive-experiment-run-dialog";
@@ -19,6 +22,7 @@ export function ExperimentRunDetail({ runId }: { runId: string }) {
   const router = useRouter();
   const [run, setRun] = useState<ExperimentRun | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
+  const [protocols, setProtocols] = useState<Protocol[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
@@ -26,8 +30,8 @@ export function ExperimentRunDetail({ runId }: { runId: string }) {
   const load = useCallback(async () => {
     setLoading(true); setError(null);
     try {
-      const [loadedRun, projectResponse] = await Promise.all([getExperimentRun(runId), listProjects()]);
-      setRun(loadedRun); setProjects(projectResponse.items);
+      const [loadedRun, projectResponse, protocolResponse] = await Promise.all([getExperimentRun(runId), listProjects(), listProtocols()]);
+      setRun(loadedRun); setProjects(projectResponse.items); setProtocols(protocolResponse.items);
     } catch (cause) { setError(cause instanceof Error ? cause.message : "The Experiment could not be loaded."); }
     finally { setLoading(false); }
   }, [runId]);
@@ -35,13 +39,15 @@ export function ExperimentRunDetail({ runId }: { runId: string }) {
     let ignore = false;
     async function loadDetail() {
       try {
-        const [loadedRun, projectResponse] = await Promise.all([
+        const [loadedRun, projectResponse, protocolResponse] = await Promise.all([
           getExperimentRun(runId),
           listProjects(),
+          listProtocols(),
         ]);
         if (!ignore) {
           setRun(loadedRun);
           setProjects(projectResponse.items);
+          setProtocols(protocolResponse.items);
           setError(null);
         }
       } catch (cause) {
@@ -61,6 +67,7 @@ export function ExperimentRunDetail({ runId }: { runId: string }) {
   if (loading) return <Card><LoadingState label="Loading Experiment" /></Card>;
   if (error || !run) return <Card><ErrorState title="Experiment could not be opened" description={error ?? "The Experiment was not found."} onRetry={() => void load()} /></Card>;
   const project = projects.find((item) => item.id === run.project_id);
+  const protocolMatch = protocols.flatMap((protocol) => protocol.versions.map((version) => ({ protocol, version }))).find(({ version }) => version.id === run.protocol_version_id);
   return (
     <div className={styles.pageStack}>
       <PageHeader
@@ -71,12 +78,12 @@ export function ExperimentRunDetail({ runId }: { runId: string }) {
         title={run.title}
       />
       <div className={styles.detailGrid}>
-        <Card><CardHeader><CardTitle>Experiment record</CardTitle><ExperimentRunStatusBadge status={run.status} /></CardHeader><CardContent className={styles.detailSections}><section><h3>Project</h3><p>{project?.title ?? "Project unavailable"}</p></section><section><h3>Description</h3><p>{run.description ?? "No description recorded."}</p></section><section><h3>Purpose</h3><p>{run.purpose ?? "No purpose recorded."}</p></section></CardContent></Card>
+        <Card><CardHeader><CardTitle>Experiment record</CardTitle><ExperimentRunStatusBadge status={run.status} /></CardHeader><CardContent className={styles.detailSections}><section><h3>Project</h3><p>{project?.title ?? "Project unavailable"}</p></section><section><h3>Protocol version</h3><p>{protocolMatch ? <Link href={`/experiments/projects/${run.project_id}/protocols/${protocolMatch.protocol.id}`}>{protocolVersionLabel(protocolMatch.protocol, protocolMatch.version)}</Link> : run.protocol_version_id ? "Version unavailable" : "No Protocol assigned"}</p></section><section><h3>Description</h3><p>{run.description ?? "No description recorded."}</p></section><section><h3>Purpose</h3><p>{run.purpose ?? "No purpose recorded."}</p></section></CardContent></Card>
         <Card><CardHeader><CardTitle>Planning and execution time</CardTitle></CardHeader><CardContent className={styles.timeGrid}><div><CalendarClock aria-hidden="true" size={18} /><div><h3>Planned</h3><p>{formatDateTime(run.planned_start_at)} → {formatDateTime(run.planned_end_at)}</p></div></div><div><Timer aria-hidden="true" size={18} /><div><h3>Actual</h3><p>{formatDateTime(run.actual_start_at)} → {formatDateTime(run.actual_end_at)}</p></div></div></CardContent></Card>
       </div>
       <Card><CardHeader><CardTitle>Traceability</CardTitle></CardHeader><CardContent className={styles.recordMetadata}><span>Revision {run.revision}</span><span>Created {formatDateTime(run.created_at)}</span><span>Updated {formatDateTime(run.updated_at)}</span></CardContent></Card>
       <Card><div className={styles.plannedNotice}><Timer aria-hidden="true" size={22} /><div><h2>Execution is planned for P1-06</h2><p>This record keeps planned and actual timestamps separate. Step execution is not simulated here.</p></div></div></Card>
-      {editing ? <ExperimentRunFormDialog open projects={projects} run={run} onOpenChange={setEditing} onSaved={(saved) => { setRun(saved); setEditing(false); }} /> : null}
+      {editing ? <ExperimentRunFormDialog open projects={projects} protocols={protocols} run={run} onOpenChange={setEditing} onSaved={(saved) => { setRun(saved); setEditing(false); }} /> : null}
       {archiving ? <ArchiveExperimentRunDialog open run={run} onOpenChange={setArchiving} onArchived={() => router.push("/experiments/runs")} /> : null}
     </div>
   );

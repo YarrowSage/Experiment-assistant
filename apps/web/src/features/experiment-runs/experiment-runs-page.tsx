@@ -7,6 +7,8 @@ import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react
 import { Button, Card, EmptyState, ErrorState, Field, Input, LoadingState, PageHeader, Select } from "@/components/ui";
 import { listProjects } from "@/features/projects/api";
 import type { Project } from "@/features/projects/types";
+import { listProtocols } from "@/features/protocols/api";
+import { protocolVersionLabel, type Protocol } from "@/features/protocols/types";
 
 import { listExperimentRuns } from "./api";
 import { ArchiveExperimentRunDialog } from "./archive-experiment-run-dialog";
@@ -20,6 +22,7 @@ type FilterStatus = Exclude<ExperimentRunStatus, "archived"> | "";
 export function ExperimentRunsPage({ projectId }: { projectId?: string }) {
   const [runs, setRuns] = useState<ExperimentRun[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
+  const [protocols, setProtocols] = useState<Protocol[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [archived, setArchived] = useState(false);
@@ -34,12 +37,14 @@ export function ExperimentRunsPage({ projectId }: { projectId?: string }) {
     setLoading(true);
     setError(null);
     try {
-      const [runResponse, projectResponse] = await Promise.all([
+      const [runResponse, projectResponse, protocolResponse] = await Promise.all([
         listExperimentRuns({ archived, projectId, search, status }),
         listProjects(),
+        listProtocols(projectId),
       ]);
       setRuns(runResponse.items);
       setProjects(projectResponse.items);
+      setProtocols(protocolResponse.items);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Experiments could not be loaded.");
     } finally {
@@ -51,13 +56,15 @@ export function ExperimentRunsPage({ projectId }: { projectId?: string }) {
     let ignore = false;
     async function loadForFilters() {
       try {
-        const [runResponse, projectResponse] = await Promise.all([
+        const [runResponse, projectResponse, protocolResponse] = await Promise.all([
           listExperimentRuns({ archived, projectId, search, status }),
           listProjects(),
+          listProtocols(projectId),
         ]);
         if (!ignore) {
           setRuns(runResponse.items);
           setProjects(projectResponse.items);
+          setProtocols(protocolResponse.items);
           setError(null);
         }
       } catch (cause) {
@@ -77,6 +84,10 @@ export function ExperimentRunsPage({ projectId }: { projectId?: string }) {
   const projectNames = useMemo(
     () => new Map(projects.map((project) => [project.id, project.title])),
     [projects],
+  );
+  const protocolVersionNames = useMemo(
+    () => new Map(protocols.flatMap((protocol) => protocol.versions.map((version) => [version.id, protocolVersionLabel(protocol, version)] as const))),
+    [protocols],
   );
   const contextProject = projects.find((project) => project.id === projectId);
 
@@ -134,6 +145,7 @@ export function ExperimentRunsPage({ projectId }: { projectId?: string }) {
                 </div>
                 <dl className={styles.runMetadata}>
                   <div><dt>Project</dt><dd>{projectNames.get(run.project_id) ?? "Project unavailable"}</dd></div>
+                  <div><dt>Protocol</dt><dd>{run.protocol_version_id ? protocolVersionNames.get(run.protocol_version_id) ?? "Version unavailable" : "None"}</dd></div>
                   <div><dt>Planned start</dt><dd>{formatDateTime(run.planned_start_at)}</dd></div>
                   <div><dt>Actual start</dt><dd>{formatDateTime(run.actual_start_at)}</dd></div>
                 </dl>
@@ -146,8 +158,8 @@ export function ExperimentRunsPage({ projectId }: { projectId?: string }) {
           </div>
         ) : <Card><EmptyState title={archived ? "No archived Experiments" : "No Experiments yet"} description={archived ? "Archived Experiments remain preserved and will appear here." : "Create an Experiment to record planned work separately from actual execution."} icon={<Beaker size={23} />} action={!archived && projects.length ? <Button variant="secondary" onClick={() => setCreating(true)}>New Experiment</Button> : undefined} /></Card>}
 
-      {creating ? <ExperimentRunFormDialog open projects={projects} fixedProjectId={projectId} onOpenChange={setCreating} onSaved={() => void load()} /> : null}
-      {editing ? <ExperimentRunFormDialog open projects={projects} run={editing} onOpenChange={(open) => { if (!open) setEditing(null); }} onSaved={() => { setEditing(null); void load(); }} /> : null}
+      {creating ? <ExperimentRunFormDialog open projects={projects} protocols={protocols} fixedProjectId={projectId} onOpenChange={setCreating} onSaved={() => void load()} /> : null}
+      {editing ? <ExperimentRunFormDialog open projects={projects} protocols={protocols} run={editing} onOpenChange={(open) => { if (!open) setEditing(null); }} onSaved={() => { setEditing(null); void load(); }} /> : null}
       {archiving ? <ArchiveExperimentRunDialog open run={archiving} onOpenChange={(open) => { if (!open) setArchiving(null); }} onArchived={() => { setArchiving(null); void load(); }} /> : null}
     </div>
   );

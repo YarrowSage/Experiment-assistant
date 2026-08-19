@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => ({
   createExperimentRun: vi.fn(),
   listExperimentRuns: vi.fn(),
   listProjects: vi.fn(),
+  listProtocols: vi.fn(),
   updateExperimentRun: vi.fn(),
 }));
 
@@ -21,6 +22,7 @@ vi.mock("./api", async (importOriginal) => ({
   updateExperimentRun: mocks.updateExperimentRun,
 }));
 vi.mock("@/features/projects/api", () => ({ listProjects: mocks.listProjects }));
+vi.mock("@/features/protocols/api", () => ({ listProtocols: mocks.listProtocols }));
 
 const project = {
   id: "11111111-1111-4111-8111-111111111111", workspace_id: "4b8f6a4d-6bd1-5e91-a028-8d1e282b6520",
@@ -30,6 +32,7 @@ const project = {
 };
 const run: ExperimentRun = {
   id: "22222222-2222-4222-8222-222222222222", project_id: project.id, title: "Pilot Run",
+  protocol_version_id: null,
   description: null, purpose: "Verify response", status: "planned",
   planned_start_at: "2026-08-20T08:00:00Z", planned_end_at: null,
   actual_start_at: null, actual_end_at: null, completed_at: null, completion_note: null,
@@ -40,6 +43,7 @@ describe("ExperimentRunsPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.listProjects.mockResolvedValue({ items: [project], total: 1, limit: 50, offset: 0 });
+    mocks.listProtocols.mockResolvedValue({ items: [], total: 0, limit: 50, offset: 0 });
     mocks.listExperimentRuns.mockResolvedValue({ items: [], total: 0, limit: 50, offset: 0 });
   });
 
@@ -73,4 +77,3 @@ describe("ExperimentRunsPage", () => {
     await waitFor(() => expect(mocks.createExperimentRun).toHaveBeenCalledTimes(1));
   });
 });
-

@@ -13,7 +13,7 @@
 .runHeader a { color: inherit; text-decoration: none; }
 .runHeader a:hover { color: var(--color-accent); }
 .runHeader p, .plannedNotice p { margin: var(--space-2) 0 0; color: var(--color-text-secondary); }
-.runMetadata { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-4); margin: 0; }
+.runMetadata { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-4); margin: 0; }
 .runMetadata div { display: grid; gap: var(--space-1); }
 .runMetadata dt { color: var(--color-text-secondary); font-size: var(--font-size-xs); }
 .runMetadata dd { margin: 0; }
@@ -31,4 +31,3 @@
 .plannedNotice { display: flex; gap: var(--space-4); align-items: flex-start; }
 @media (max-width: 63.99rem) { .filtersCard { align-items: stretch; flex-direction: column; } .filters { justify-content: stretch; } .detailGrid { grid-template-columns: 1fr; } }
 @media (max-width: 47.99rem) { .pageStack { gap: var(--space-5); } .filters, .runHeader, .cardActions { align-items: stretch; flex-direction: column; } .filters > * { width: 100%; } .runMetadata, .formGrid { grid-template-columns: 1fr; } .headerActions { width: 100%; } .headerActions button { flex: 1; } }
-

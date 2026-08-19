@@ -62,7 +62,7 @@ def create_experiment_run(
 ) -> ExperimentRunResponse:
     try:
         run = service.create(payload)
-    except ExperimentRunProjectConflictError as error:
+    except (ExperimentRunProjectConflictError, ExperimentRunStateConflictError) as error:
         raise_experiment_run_http_error(error)
     return ExperimentRunResponse.model_validate(run)
 

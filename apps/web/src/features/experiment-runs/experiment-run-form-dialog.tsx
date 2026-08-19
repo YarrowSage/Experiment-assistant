@@ -4,6 +4,8 @@ import { useId, useState, type FormEvent } from "react";
 
 import { Button, Dialog, Field, Input, Select, Textarea } from "@/components/ui";
 import type { Project } from "@/features/projects/types";
+import { protocolVersionLabel } from "@/features/protocols/types";
+import type { Protocol } from "@/features/protocols/types";
 
 import { createExperimentRun, ExperimentRunApiError, updateExperimentRun } from "./api";
 import styles from "./experiment-runs.module.css";
@@ -13,6 +15,7 @@ import type { ExperimentRun, ExperimentRunWriteInput } from "./types";
 type EditableStatus = ExperimentRunWriteInput["status"];
 type FormState = {
   projectId: string;
+  protocolVersionId: string;
   title: string;
   description: string;
   purpose: string;
@@ -25,6 +28,7 @@ function initialState(run: ExperimentRun | null, projectId: string | undefined, 
   return run
     ? {
         projectId: run.project_id,
+        protocolVersionId: run.protocol_version_id ?? "",
         title: run.title,
         description: run.description ?? "",
         purpose: run.purpose ?? "",
@@ -34,6 +38,7 @@ function initialState(run: ExperimentRun | null, projectId: string | undefined, 
       }
     : {
         projectId: projectId ?? projects[0]?.id ?? "",
+        protocolVersionId: "",
         title: "",
         description: "",
         purpose: "",
@@ -53,6 +58,7 @@ export function ExperimentRunFormDialog({
   onSaved,
   open,
   projects,
+  protocols,
   run = null,
 }: {
   fixedProjectId?: string;
@@ -60,6 +66,7 @@ export function ExperimentRunFormDialog({
   onSaved: (run: ExperimentRun) => void;
   open: boolean;
   projects: Project[];
+  protocols: Protocol[];
   run?: ExperimentRun | null;
 }) {
   const formId = useId();
@@ -87,6 +94,7 @@ export function ExperimentRunFormDialog({
     }
     const input: ExperimentRunWriteInput = {
       project_id: form.projectId,
+      protocol_version_id: form.protocolVersionId || null,
       title: form.title.trim(),
       description: form.description.trim() || null,
       purpose: form.purpose.trim() || null,
@@ -100,6 +108,7 @@ export function ExperimentRunFormDialog({
       const saved = run
         ? await updateExperimentRun(run.id, run.revision, {
             title: input.title,
+            protocol_version_id: input.protocol_version_id,
             description: input.description,
             purpose: input.purpose,
             status: input.status,
@@ -147,12 +156,44 @@ export function ExperimentRunFormDialog({
               {...props}
               disabled={Boolean(run || fixedProjectId)}
               value={form.projectId}
-              onChange={(event) => update("projectId", event.target.value)}
+              onChange={(event) => {
+                update("projectId", event.target.value);
+                update("protocolVersionId", "");
+              }}
             >
               <option value="">Select a Project</option>
               {projects.filter((project) => project.status !== "archived").map((project) => (
                 <option key={project.id} value={project.id}>{project.title}</option>
               ))}
+            </Select>
+          )}
+        </Field>
+        <Field
+          hint="Only published versions can be assigned. The exact version stays attached to this Experiment."
+          label="Protocol version"
+        >
+          {(props) => (
+            <Select
+              {...props}
+              value={form.protocolVersionId}
+              onChange={(event) => update("protocolVersionId", event.target.value)}
+            >
+              <option value="">No Protocol</option>
+              {protocols
+                .filter((protocol) => protocol.project_id === form.projectId)
+                .flatMap((protocol) =>
+                  protocol.versions
+                    .filter(
+                      (version) =>
+                        version.status === "published" ||
+                        version.id === run?.protocol_version_id,
+                    )
+                    .map((version) => (
+                      <option key={version.id} value={version.id}>
+                        {protocolVersionLabel(protocol, version)}
+                      </option>
+                    )),
+                )}
             </Select>
           )}
         </Field>
@@ -187,4 +228,3 @@ export function ExperimentRunFormDialog({
     </Dialog>
   );
 }
-

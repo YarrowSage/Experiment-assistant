@@ -34,6 +34,7 @@ def validate_run_text(value: str | None) -> str | None:
 
 class ExperimentRunCreate(BaseModel):
     project_id: UUID
+    protocol_version_id: UUID | None = None
     title: str
     description: str | None = None
     purpose: str | None = None
@@ -72,6 +73,7 @@ class ExperimentRunUpdate(BaseModel):
     status: ExperimentRunStatus | None = None
     planned_start_at: datetime | None = None
     planned_end_at: datetime | None = None
+    protocol_version_id: UUID | None = None
 
     @field_validator("title")
     @classmethod
@@ -104,6 +106,7 @@ class ExperimentRunResponse(BaseModel):
 
     id: UUID
     project_id: UUID
+    protocol_version_id: UUID | None
     title: str
     description: str | None
     purpose: str | None

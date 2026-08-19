@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 from datetime import datetime
+from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
 from sqlalchemy import CheckConstraint, ForeignKey, Index, Integer, String, Text, Uuid
@@ -9,6 +12,9 @@ from app.core.types import UTCDateTime
 from app.experiment_runs.domain import ExperimentRunStatus
 from app.projects.models import Project
 from app.workspaces.domain import utc_now
+
+if TYPE_CHECKING:
+    from app.protocols.models import ProtocolVersion
 
 
 class ExperimentRun(Base):
@@ -32,6 +38,7 @@ class ExperimentRun(Base):
         ),
         CheckConstraint("revision >= 1", name="ck_experiment_runs_revision_positive"),
         Index("ix_experiment_runs_project_status", "project_id", "status"),
+        Index("ix_experiment_runs_protocol_version", "protocol_version_id"),
         Index("ix_experiment_runs_planned_start", "planned_start_at"),
         Index("ix_experiment_runs_updated_at", "updated_at"),
     )
@@ -41,6 +48,11 @@ class ExperimentRun(Base):
         Uuid(as_uuid=True),
         ForeignKey("projects.id", ondelete="RESTRICT"),
         nullable=False,
+    )
+    protocol_version_id: Mapped[UUID | None] = mapped_column(
+        Uuid(as_uuid=True),
+        ForeignKey("protocol_versions.id", ondelete="RESTRICT"),
+        nullable=True,
     )
     title: Mapped[str] = mapped_column(String(200), nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -59,3 +71,4 @@ class ExperimentRun(Base):
     revision: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
 
     project: Mapped[Project] = relationship(lazy="joined")
+    protocol_version: Mapped[ProtocolVersion | None] = relationship(lazy="joined")

@@ -74,6 +74,9 @@ describe("secondary navigation", () => {
     expect(navigation?.items[1]?.href).toBe(
       "/experiments/projects/project-1/experiments",
     );
+    expect(navigation?.items[2]?.href).toBe(
+      "/experiments/projects/project-1/protocols",
+    );
   });
 
   it("prefers a more specific contextual rule over its module fallback", () => {

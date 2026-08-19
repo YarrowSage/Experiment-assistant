@@ -220,7 +220,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       </Dialog>
 
       <Dialog
-        description="Project and Experiment creation are available; Protocols remain planned."
+        description="Project, Experiment, and Protocol creation are available."
         footer={
           <Button variant="secondary" onClick={() => setDialog(null)}>
             Close
@@ -231,8 +231,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         onOpenChange={(open) => setDialog(open ? "new" : null)}
       >
         <p className={styles.modalCopy}>
-          Create and manage real Projects and generic Experiments. Protocol creation will appear
-          only after its immutable versioning domain is reviewed.
+          Create and manage real Projects, generic Experiments, and immutable Protocol versions.
         </p>
         <div className={styles.modalNotice}>
           <strong>Project creation is available</strong>
@@ -254,6 +253,17 @@ export function AppShell({ children }: { children: ReactNode }) {
             onClick={() => setDialog(null)}
           >
             Open All Experiments
+          </Link>
+        </div>
+        <div className={styles.modalNotice}>
+          <strong>Protocol creation is available</strong>
+          <p>Open a Project to draft ordered steps and publish an immutable version.</p>
+          <Link
+            className={styles.modalActionLink}
+            href="/experiments/projects"
+            onClick={() => setDialog(null)}
+          >
+            Choose a Project
           </Link>
         </div>
       </Dialog>

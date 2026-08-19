@@ -40,7 +40,7 @@ export const secondaryNavigationRules: readonly SecondaryNavigationRule[] = [
         items: [
           { href: projectPath, label: "Overview" },
           { href: `${projectPath}/experiments`, label: "Experiments" },
-          { label: "Protocols" },
+          { href: `${projectPath}/protocols`, label: "Protocols" },
           { label: "Planner" },
           { label: "Files" },
           { label: "Analysis" },

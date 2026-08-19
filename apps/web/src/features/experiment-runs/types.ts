@@ -14,6 +14,7 @@ export type ExperimentRunStatus = (typeof experimentRunStatuses)[number];
 export type ExperimentRun = {
   id: string;
   project_id: string;
+  protocol_version_id: string | null;
   title: string;
   description: string | null;
   purpose: string | null;
@@ -31,6 +32,7 @@ export type ExperimentRun = {
 
 export type ExperimentRunWriteInput = {
   project_id: string;
+  protocol_version_id: string | null;
   title: string;
   description: string | null;
   purpose: string | null;
@@ -45,4 +47,3 @@ export type ExperimentRunListResponse = {
   limit: number;
   offset: number;
 };
-
