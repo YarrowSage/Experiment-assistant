@@ -1,7 +1,8 @@
 # Product Specification
 
-Status: Accepted Phase 0 product direction; not implemented
-Last reviewed: 2026-08-19
+Status: Accepted product direction; Phase 1 generic experiment lifecycle is
+implemented, while specialized scientific modules remain planned
+Last reviewed: 2026-08-20
 
 ## 1. Product Definition
 

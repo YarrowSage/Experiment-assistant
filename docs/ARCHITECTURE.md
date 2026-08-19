@@ -1,7 +1,8 @@
 # Architecture
 
-Status: Accepted Phase 0 architecture; not implemented
-Last reviewed: 2026-08-19
+Status: Accepted architecture; Phase 1 generic experiment core implemented,
+with later modules and hosted deployment still planned
+Last reviewed: 2026-08-20
 
 ## 1. Decision Summary
 

@@ -1,7 +1,8 @@
 # Data Model
 
-Status: Accepted conceptual Phase 0 model; no database tables have been created
-Last reviewed: 2026-08-19
+Status: Accepted conceptual model; Phase 1 core tables are implemented through
+Alembic revision `0006`, while later domain models remain planned
+Last reviewed: 2026-08-20
 
 ## 1. Purpose
 

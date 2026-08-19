@@ -92,7 +92,6 @@ export function createExperimentRun(input: ExperimentRunWriteInput): Promise<Exp
     body: JSON.stringify(input),
   });
 }
-
 export function updateExperimentRun(
   runId: string,
   expectedRevision: number,
@@ -113,4 +112,3 @@ export function archiveExperimentRun(
     body: JSON.stringify({ expected_revision: expectedRevision }),
   });
 }
-

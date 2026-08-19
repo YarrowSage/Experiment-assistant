@@ -7,4 +7,3 @@ export const metadata: Metadata = { title: "All Experiments" };
 export default function Page() {
   return <ExperimentRunsPage />;
 }
-

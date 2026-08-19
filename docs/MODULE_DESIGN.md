@@ -1,7 +1,8 @@
 # Module Design
 
-Status: Accepted Phase 0 module boundaries; no modules are implemented
-Last reviewed: 2026-08-19
+Status: Accepted module boundaries; Phase 1 Project, Protocol, ExperimentRun,
+execution, evidence, and amendment modules are implemented
+Last reviewed: 2026-08-20
 
 ## 1. Design Objective
 

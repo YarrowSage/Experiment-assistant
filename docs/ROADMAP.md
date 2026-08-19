@@ -1,7 +1,12 @@
 # Roadmap
 
-Status: Accepted Phase 0 roadmap; future phases are not started
-Last reviewed: 2026-08-19
+Status: Phase 1 generic experiment foundation completed on its review branch;
+future phases are not started
+Last reviewed: 2026-08-20
+
+The reviewed issue sequence in [PHASE_1_AUDIT.md](PHASE_1_AUDIT.md) supersedes
+the original Phase 0 scheduling labels where they differ. The architecture and
+future-scope boundaries in this roadmap remain authoritative.
 
 ## 1. Roadmap Rules
 

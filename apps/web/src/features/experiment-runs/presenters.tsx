@@ -47,4 +47,3 @@ export function toLocalDateTimeInput(value: string | null): string {
   const local = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
   return local.toISOString().slice(0, 16);
 }
-
