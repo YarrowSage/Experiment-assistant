@@ -188,10 +188,10 @@ export function ProjectOverview({ projectId }: { projectId: string }) {
         <div className={styles.plannedModules}>
           <FileText aria-hidden="true" size={23} />
           <div>
-            <h2>Project modules are planned</h2>
+            <h2>Project workflows</h2>
             <p>
-              Experiments, Protocols, Planner, Files, and Analysis will be implemented in their own
-              reviewed issues. No counts or records are invented here.
+              Experiments are now available from the Project navigation. Protocols, Planner,
+              Files, and Analysis remain planned and no records are invented here.
             </p>
           </div>
         </div>

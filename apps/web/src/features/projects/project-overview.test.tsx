@@ -39,7 +39,7 @@ describe("ProjectOverview", () => {
     expect(await screen.findByRole("heading", { name: project.title })).toBeInTheDocument();
     expect(screen.getByText(project.objective as string)).toBeInTheDocument();
     expect(screen.getByText("Revision 3")).toBeInTheDocument();
-    expect(screen.getByText(/No counts or records are invented here/)).toBeInTheDocument();
+    expect(screen.getByText(/no records are invented here/i)).toBeInTheDocument();
   });
 
   it("shows a specific API error state", async () => {

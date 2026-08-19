@@ -22,7 +22,8 @@ def test_clean_upgrade_downgrade_and_reupgrade(tmp_path: Path) -> None:
 
     command.upgrade(config, "head")
     engine = create_database_engine(database_url)
-    assert set(inspect(engine).get_table_names()) == {"alembic_version", "projects", "workspaces"}
+    expected_tables = {"alembic_version", "experiment_runs", "projects", "workspaces"}
+    assert set(inspect(engine).get_table_names()) == expected_tables
     with Session(engine) as session:
         assert session.scalar(select(Workspace.id)) == DEFAULT_WORKSPACE_ID
 
@@ -30,7 +31,7 @@ def test_clean_upgrade_downgrade_and_reupgrade(tmp_path: Path) -> None:
     assert inspect(engine).get_table_names() == ["alembic_version"]
 
     command.upgrade(config, "head")
-    assert set(inspect(engine).get_table_names()) == {"alembic_version", "projects", "workspaces"}
+    assert set(inspect(engine).get_table_names()) == expected_tables
     with Session(engine) as session:
         assert session.scalar(select(Workspace.id)) == DEFAULT_WORKSPACE_ID
     engine.dispose()
