@@ -23,6 +23,10 @@ import { classNames } from "@/lib/class-names";
 
 import { Button, Dialog, Drawer } from "../ui";
 import styles from "./app-shell.module.css";
+import {
+  resolveSecondaryNavigation,
+  type SecondaryNavigationConfig,
+} from "./secondary-navigation";
 
 type NavigationItem = {
   href: string;
@@ -41,56 +45,17 @@ const primaryNavigation: NavigationItem[] = [
 
 const mobileNavigation = primaryNavigation.slice(0, 4);
 
-type SecondaryConfig = {
-  items: Array<{ href?: string; label: string }>;
-  title: string;
-};
-
-const secondaryNavigation: Record<string, SecondaryConfig> = {
-  "/experiments": {
-    title: "Experiments",
-    items: [
-      { href: "/experiments", label: "Overview" },
-      { label: "Projects" },
-      { label: "Protocols" },
-      { label: "Runs" },
-    ],
-  },
-  "/workbenches": {
-    title: "Workbenches",
-    items: [
-      { href: "/workbenches", label: "Overview" },
-      { label: "Animal" },
-      { label: "Cell" },
-      { label: "Plate" },
-      { label: "Chromatography" },
-    ],
-  },
-  "/analysis": {
-    title: "Analysis",
-    items: [
-      { href: "/analysis", label: "Overview" },
-      { label: "Sessions" },
-      { label: "Data sources" },
-      { label: "Exports" },
-    ],
-  },
-  "/resources": {
-    title: "Resources",
-    items: [
-      { href: "/resources", label: "Overview" },
-      { label: "Kits & manuals" },
-      { label: "Files" },
-      { label: "Templates" },
-    ],
-  },
-};
-
 function isRouteActive(pathname: string, href: string) {
   return href === "/" ? pathname === "/" : pathname.startsWith(href);
 }
 
-function SecondaryNavigation({ config, pathname }: { config: SecondaryConfig; pathname: string }) {
+function SecondaryNavigation({
+  config,
+  pathname,
+}: {
+  config: SecondaryNavigationConfig;
+  pathname: string;
+}) {
   return (
     <aside aria-label={`${config.title} navigation`} className={styles.secondary}>
       <div className={styles.secondaryInner}>
@@ -127,7 +92,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [dialog, setDialog] = useState<"search" | "new" | "settings" | null>(null);
   const [moreOpen, setMoreOpen] = useState(false);
-  const secondaryConfig = secondaryNavigation[pathname];
+  const secondaryConfig = resolveSecondaryNavigation(pathname);
 
   useEffect(() => {
     function openSearch(event: KeyboardEvent) {

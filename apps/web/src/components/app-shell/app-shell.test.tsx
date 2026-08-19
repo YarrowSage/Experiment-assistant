@@ -1,14 +1,20 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AppShell } from "./app-shell";
 
+const navigationState = vi.hoisted(() => ({ pathname: "/experiments" }));
+
 vi.mock("next/navigation", () => ({
-  usePathname: () => "/experiments",
+  usePathname: () => navigationState.pathname,
 }));
 
 describe("AppShell", () => {
+  beforeEach(() => {
+    navigationState.pathname = "/experiments";
+  });
+
   it("exposes primary, contextual, and mobile navigation semantics", () => {
     render(
       <AppShell>
@@ -23,8 +29,25 @@ describe("AppShell", () => {
       "aria-current",
       "page",
     );
-    expect(screen.getAllByText("Planned")).toHaveLength(3);
+    expect(screen.getAllByText("Planned")).toHaveLength(2);
     expect(screen.getByRole("main")).toHaveTextContent("Experiments content");
+  });
+
+  it("keeps module navigation visible on a nested route", () => {
+    navigationState.pathname = "/analysis/general";
+
+    render(
+      <AppShell>
+        <h1>General analysis content</h1>
+      </AppShell>,
+    );
+
+    expect(screen.getByRole("complementary", { name: "Analysis navigation" })).toBeInTheDocument();
+    expect(screen.getByText("General Analysis")).toBeInTheDocument();
+    expect(screen.getAllByRole("link", { name: "Analysis" })[0]).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
   });
 
   it("labels unfinished create behavior honestly", async () => {
