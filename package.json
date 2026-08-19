@@ -1,0 +1,16 @@
+{
+  "name": "experiment-assistant",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@11.19.0",
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "scripts": {
+    "dev:web": "pnpm --filter @experiment-assistant/web dev",
+    "build:web": "pnpm --filter @experiment-assistant/web build",
+    "lint:web": "pnpm --filter @experiment-assistant/web lint",
+    "typecheck:web": "pnpm --filter @experiment-assistant/web typecheck",
+    "check:web": "pnpm lint:web && pnpm typecheck:web && pnpm build:web"
+  }
+}

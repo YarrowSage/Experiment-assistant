@@ -1,0 +1,4 @@
+Alembic is configured in P1-01, but this directory intentionally contains no
+revision yet. The first real migration will be created with the first accepted
+business schema. Every later schema change must be represented by a reviewed
+Alembic revision.
