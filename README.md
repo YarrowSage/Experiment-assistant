@@ -3,9 +3,9 @@
 A modular, multi-device laboratory planning, execution, recording, management,
 and analysis assistant for scientific research.
 
-> Current status: Phase 0 product and architecture definition is accepted.
-> The repository still contains documentation only; no usable application or
-> business feature has been implemented.
+> Current status: Phase 1 is active. P1-01 establishes the web/API development
+> foundation only. No Project, Protocol, ExperimentRun, Workspace UI, or other
+> business workflow is implemented yet.
 
 ## Vision
 
@@ -14,58 +14,115 @@ Experiment Assistant is intended to connect the full experimental workflow:
 Plan → schedule → prepare → execute → record → structure data → analyze →
 export → review.
 
-It is not only an electronic notebook, calculator, calendar, or analysis tool.
-The goal is a modular research assistant whose desktop and mobile experiences
-use the same core data while focusing on different jobs.
+The accepted architecture uses a responsive Next.js client and a versioned
+FastAPI backend. All clients use the API; the frontend never accesses the
+database directly.
 
-## Current Status
+## Repository Structure
 
-The repository currently contains Phase 0 documentation only:
+```text
+apps/
+  web/    Next.js, React, and TypeScript client
+  api/    FastAPI, SQLAlchemy, and Alembic backend
+docs/     Accepted product and architecture documents
+```
 
-- product definition and scope;
-- proposed modular architecture;
-- conceptual data model;
-- desktop/mobile and synchronization strategy;
-- UI design principles;
-- development and GitHub workflow rules;
-- staged roadmap.
+Only folders needed by the current implementation are created. Planned shared
+packages and business modules will be added when an accepted issue needs them.
 
-There is currently no application shell, database schema, API, synchronization
-service, authentication system, or production deployment.
+## Prerequisites
 
-## Planned Features
+- Node.js 24 LTS (Next.js requires Node.js 20.9 or newer)
+- pnpm 11.19.0
+- Python 3.12
+- uv 0.12.5
 
-All items in this section are planned, not implemented.
+On Windows, after installing Node.js 24 LTS and Python 3.12, the remaining tools
+can be installed with:
 
-- project, protocol, experiment-run, and step-execution management;
-- research-aware planner and calendar;
-- extensible calculator center;
-- animal, cell, plate, and future workbenches;
-- user-directed data analysis workbench;
-- built-in and personal template library;
-- kits, manuals, and protocol relationships;
-- unified PDF, Markdown, Excel, CSV, and figure export;
-- search, backup, file management, and settings;
-- optional multi-device synchronization;
-- carefully reviewed AI assistance in a later phase.
+```powershell
+npm install --global pnpm@11.19.0
+py -3.12 -m pip install --user uv==0.12.5
+```
 
-## Architecture Direction
+## First-time Setup
 
-The accepted Phase 0 architecture direction is:
+From the repository root:
 
-- responsive Next.js and React frontend written in TypeScript;
-- installable PWA as the initial mobile delivery option;
-- API-first FastAPI backend;
-- SQLAlchemy and Alembic for database portability and migrations;
-- SQLite for early local, single-server development;
-- PostgreSQL for later multi-user and synchronized deployment;
-- storage interfaces that begin with local files and can move to object storage;
-- stable module contracts without a runtime plugin marketplace.
+```powershell
+pnpm install
+Copy-Item apps/web/.env.example apps/web/.env.local
+Copy-Item apps/api/.env.example apps/api/.env
+uv sync --project apps/api --locked --all-groups
+```
 
-These technologies have not yet been installed or implemented.
+The example configuration contains no secret. Local `.env` files, virtual
+environments, SQLite databases, uploaded research data, and build output are
+excluded from Git.
+
+## Start Development
+
+Open two terminals in the repository root.
+
+Terminal 1 — web application:
+
+```powershell
+pnpm dev:web
+```
+
+Open <http://localhost:3000>.
+
+Terminal 2 — API:
+
+```powershell
+Set-Location apps/api
+uv run uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+```
+
+Useful API URLs:
+
+- health: <http://localhost:8000/api/v1/health>
+- database readiness: <http://localhost:8000/api/v1/ready>
+- interactive API documentation: <http://localhost:8000/docs>
+
+The health endpoint checks the API process. The readiness endpoint separately
+executes a database query so infrastructure failures are visible.
+
+## Checks
+
+Frontend checks from the repository root:
+
+```powershell
+pnpm check:web
+```
+
+Backend checks:
+
+```powershell
+Set-Location apps/api
+uv run ruff check app tests alembic/env.py
+uv run mypy app
+uv run pytest
+uv run alembic check
+uv run alembic heads
+uv run alembic current
+```
+
+Alembic is configured, but P1-01 intentionally creates no database revision or
+business table. The first accepted business schema will introduce the first
+reviewed migration.
+
+## Current Limitations
+
+- The web page is a foundation readiness screen, not the Phase 1 product shell.
+- There are no business APIs or database tables.
+- SQLite is for early local, single-process development only.
+- Authentication, synchronization, uploads, PWA installability, deployment,
+  and all scientific workflows remain planned.
 
 ## Documentation
 
+- [Phase 1 repository audit and issue plan](docs/PHASE_1_AUDIT.md)
 - [Product specification](docs/PRODUCT_SPEC.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Data model](docs/DATA_MODEL.md)
@@ -75,16 +132,6 @@ These technologies have not yet been installed or implemented.
 - [Development guide](docs/DEVELOPMENT_GUIDE.md)
 - [Roadmap](docs/ROADMAP.md)
 - [Contributor and agent rules](AGENTS.md)
-
-## Roadmap
-
-Phase 0 defines the product and its foundations. Phase 1 will create only the
-application foundation, shared design system, responsive shell, and engineering
-quality baseline after explicit approval. Core experiment functionality begins
-in Phase 2.
-
-See [docs/ROADMAP.md](docs/ROADMAP.md) for phase boundaries and acceptance
-criteria.
 
 ## License
 
