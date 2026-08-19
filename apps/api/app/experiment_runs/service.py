@@ -3,6 +3,8 @@ from uuid import UUID
 
 from sqlalchemy.orm import Session
 
+from app.evidence.activity import ActivityRecorder
+from app.evidence.domain import ActivityType
 from app.experiment_runs.domain import (
     ExperimentRunLifecycleError,
     ExperimentRunStatus,
@@ -36,6 +38,7 @@ class ExperimentRunService:
         self.repository = ExperimentRunRepository(session)
         self.projects = ProjectRepository(session)
         self.protocols = ProtocolRepository(session)
+        self.activity = ActivityRecorder(session, workspace_id)
 
     def create(self, payload: ExperimentRunCreate) -> ExperimentRun:
         project = self.projects.get(self.workspace_id, payload.project_id)
@@ -66,6 +69,12 @@ class ExperimentRunService:
             revision=1,
         )
         self.repository.add(run)
+        self.activity.record(
+            ActivityType.EXPERIMENT_CREATED,
+            f"Experiment created: {run.title}",
+            project_id=run.project_id,
+            experiment_run_id=run.id,
+        )
         self.session.commit()
         self.session.refresh(run)
         return run

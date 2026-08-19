@@ -2,6 +2,8 @@ from uuid import UUID, uuid4
 
 from sqlalchemy.orm import Session
 
+from app.evidence.activity import ActivityRecorder
+from app.evidence.domain import ActivityType
 from app.projects.domain import ProjectStatus
 from app.projects.repository import ProjectRepository
 from app.protocols.domain import (
@@ -38,6 +40,7 @@ class ProtocolService:
         self.workspace_id = workspace_id
         self.repository = ProtocolRepository(session)
         self.projects = ProjectRepository(session)
+        self.activity = ActivityRecorder(session, workspace_id)
 
     def create(self, payload: ProtocolCreate) -> Protocol:
         project = self.projects.get(self.workspace_id, payload.project_id)
@@ -69,6 +72,12 @@ class ProtocolService:
         )
         protocol.versions.append(version)
         self.repository.add(protocol)
+        self.activity.record(
+            ActivityType.PROTOCOL_CREATED,
+            f"Protocol created: {protocol.title}",
+            project_id=protocol.project_id,
+            protocol_id=protocol.id,
+        )
         self.session.commit()
         return self.get(protocol.id)
 
@@ -243,6 +252,12 @@ class ProtocolService:
             protocol.id,
             protocol.revision,
             {"updated_at": now},
+        )
+        self.activity.record(
+            ActivityType.PROTOCOL_VERSION_PUBLISHED,
+            f"Protocol v{version.version_number} published.",
+            project_id=protocol.project_id,
+            protocol_id=protocol.id,
         )
         self.session.commit()
         return self.get_version(version.id)

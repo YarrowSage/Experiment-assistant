@@ -24,13 +24,18 @@ def test_clean_upgrade_downgrade_and_reupgrade(tmp_path: Path) -> None:
     engine = create_database_engine(database_url)
     expected_tables = {
         "alembic_version",
+        "activity_events",
         "experiment_runs",
+        "experiment_run_attachments",
+        "file_attachments",
+        "notes",
         "projects",
         "protocol_steps",
         "protocol_substeps",
         "protocol_versions",
         "protocols",
         "run_step_records",
+        "run_step_attachments",
         "run_substep_records",
         "workspaces",
     }

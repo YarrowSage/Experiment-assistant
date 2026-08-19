@@ -17,6 +17,9 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("./api", () => mocks);
+vi.mock("@/features/evidence/evidence-panel", () => ({
+  EvidencePanel: () => <div>Evidence panel</div>,
+}));
 
 const run: ExperimentRun = {
   id: "11111111-1111-4111-8111-111111111111",

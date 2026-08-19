@@ -3,6 +3,8 @@ from uuid import UUID
 
 from sqlalchemy.orm import Session
 
+from app.evidence.activity import ActivityRecorder
+from app.evidence.domain import ActivityType
 from app.execution.domain import ExecutionStateError, RunStepStatus, require_step_transition
 from app.execution.errors import (
     ExecutionRevisionConflictError,
@@ -28,6 +30,7 @@ class ExecutionService:
         self.repository = ExecutionRepository(session)
         self.runs = ExperimentRunRepository(session)
         self.protocols = ProtocolRepository(session)
+        self.activity = ActivityRecorder(session, workspace_id)
 
     def get(self, run_id: UUID) -> ExperimentRun:
         run = self.repository.get_run(self.workspace_id, run_id)
@@ -99,6 +102,12 @@ class ExecutionService:
                         )
                     )
                 self.session.add(snapshot)
+        self.activity.record(
+            ActivityType.RUN_STARTED,
+            "Experiment execution started.",
+            project_id=run.project_id,
+            experiment_run_id=run.id,
+        )
         self.session.commit()
         return self.get(run.id)
 
@@ -143,6 +152,13 @@ class ExecutionService:
         if updated is None:
             self.session.rollback()
             raise ExecutionRevisionConflictError
+        self.activity.record(
+            ActivityType.STEP_STARTED,
+            f"Step started: {step.title_snapshot}",
+            project_id=run.project_id,
+            experiment_run_id=run.id,
+            run_step_record_id=step.id,
+        )
         self.session.commit()
         return self.get(run.id)
 
@@ -168,6 +184,13 @@ class ExecutionService:
         if updated is None:
             self.session.rollback()
             raise ExecutionRevisionConflictError
+        self.activity.record(
+            ActivityType.STEP_COMPLETED,
+            f"Step completed: {step.title_snapshot}",
+            project_id=run.project_id,
+            experiment_run_id=run.id,
+            run_step_record_id=step.id,
+        )
         self.session.commit()
         return self.get(run.id)
 
@@ -195,6 +218,17 @@ class ExecutionService:
         if updated is None:
             self.session.rollback()
             raise ExecutionRevisionConflictError
+        event_type = (
+            ActivityType.RUN_PAUSED
+            if target is ExperimentRunStatus.PAUSED
+            else ActivityType.RUN_RESUMED
+        )
+        self.activity.record(
+            event_type,
+            "Experiment paused." if target is ExperimentRunStatus.PAUSED else "Experiment resumed.",
+            project_id=run.project_id,
+            experiment_run_id=run.id,
+        )
         self.session.commit()
         return self.get(run.id)
 

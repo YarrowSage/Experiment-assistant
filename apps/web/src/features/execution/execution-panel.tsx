@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight, Check, CirclePause, CirclePlay, Clock3, ListChec
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { Badge, Button, Card, CardContent, CardHeader, CardTitle, ErrorState, LoadingState } from "@/components/ui";
+import { EvidencePanel } from "@/features/evidence/evidence-panel";
 import type { ExperimentRun } from "@/features/experiment-runs/types";
 
 import { completeRunStep, getRunExecution, pauseRunExecution, resumeRunExecution, startRunExecution, startRunStep } from "./api";
@@ -74,6 +75,7 @@ export function ExecutionPanel({ run, onRunChanged }: { run: ExperimentRun; onRu
     {selected ? <CurrentStep step={selected} paused={paused} working={working} canStart={selected.id === nextPending?.id && !active} onStart={() => void mutate(() => startRunStep(selected.id, current.run.revision, selected.revision), "Step started")} onComplete={() => void mutate(() => completeRunStep(selected.id, current.run.revision, selected.revision), "Step completed")} /> : <Card><div className={styles.notReady}><ListChecks aria-hidden="true" size={22} /><div><h2>No Protocol steps</h2><p>This generic Experiment has started without a Protocol. Step execution is unavailable.</p></div></div></Card>}
     {selected ? <div className={styles.stepNavigation}><Button disabled={selectedIndex <= 0} variant="secondary" onClick={() => setSelectedId(current.steps[selectedIndex - 1]?.id ?? null)}><ArrowLeft aria-hidden="true" size={18} />Previous</Button><span>Step {selectedIndex + 1} of {current.steps.length}</span><Button disabled={selectedIndex >= current.steps.length - 1} variant="secondary" onClick={() => setSelectedId(current.steps[selectedIndex + 1]?.id ?? null)}>Next<ArrowRight aria-hidden="true" size={18} /></Button></div> : null}
     {current.steps.length ? <Card><CardHeader><CardTitle>All steps</CardTitle></CardHeader><CardContent><ol className={styles.allSteps}>{current.steps.map((step) => <li key={step.id}><button aria-current={selected?.id === step.id ? "step" : undefined} type="button" onClick={() => setSelectedId(step.id)}><span>{step.position}</span><span><strong>{step.title_snapshot}</strong><small>{step.status}</small></span>{step.status === "completed" ? <Check aria-hidden="true" size={18} /> : null}</button></li>)}</ol></CardContent></Card> : null}
+    <EvidencePanel runId={run.id} runStepId={selected?.id ?? null} />
   </section>;
 }
 
