@@ -1,0 +1,9 @@
+.pageStack { display: grid; gap: clamp(var(--space-7), 4vw, var(--space-9)); }
+.runList { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); }
+.runBody { display: grid; gap: var(--space-3); }
+.runBody > span { display: flex; align-items: center; gap: var(--space-2); color: var(--color-text-secondary); font-size: var(--font-size-sm); }
+.runBody p { margin: 0; color: var(--color-text-secondary); font-size: var(--font-size-sm); }
+.runBody a { min-height: 44px; display: inline-flex; align-items: center; justify-self: start; color: var(--color-accent-text); font-size: var(--font-size-sm); font-weight: 700; }
+.boundaryCard { display: flex; align-items: flex-start; gap: var(--space-3); background: var(--color-surface-subtle); box-shadow: none; }
+.boundaryCard > svg { flex: 0 0 auto; color: var(--color-text-secondary); }
+@media (max-width: 47.99rem) { .runList { grid-template-columns: 1fr; } }

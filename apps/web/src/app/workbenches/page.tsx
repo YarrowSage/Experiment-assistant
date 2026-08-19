@@ -66,7 +66,7 @@ export default function WorkbenchesPage() {
               </CardHeader>
               <CardContent className={styles.workbenchBody}>
                 <p>{workbench.description}</p>
-                <p>No records, models, APIs, or business actions are included in P1-02.</p>
+                <p>No records, models, APIs, or business actions are included in Phase 1.</p>
               </CardContent>
             </Card>
           );
