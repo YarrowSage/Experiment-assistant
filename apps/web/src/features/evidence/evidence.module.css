@@ -3,7 +3,7 @@
 .panelHeader span { color: var(--color-text-tertiary); font-size: var(--font-size-xs); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
 .panelHeader h2 { margin: var(--space-1) 0 0; font-size: var(--font-size-lg); }
 .contextToggle { display: inline-flex; padding: 3px; border: 1px solid var(--color-border); border-radius: var(--radius-control); background: var(--color-surface-subtle); }
-.contextToggle button { min-height: 38px; padding: 0 var(--space-3); color: var(--color-text-secondary); border: 0; border-radius: 9px; background: transparent; cursor: pointer; }
+.contextToggle button { min-height: 44px; padding: 0 var(--space-3); color: var(--color-text-secondary); border: 0; border-radius: 9px; background: transparent; cursor: pointer; }
 .contextToggle button[aria-pressed="true"] { color: var(--color-text-primary); background: var(--color-surface); box-shadow: var(--shadow-xs); }
 .tabStack, .noteForm, .uploadForm { display: grid; gap: var(--space-4); }
 .noteForm, .uploadForm { padding-bottom: var(--space-5); border-bottom: 1px solid var(--color-border); }

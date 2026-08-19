@@ -4,7 +4,7 @@
 .filters { flex: 1; justify-content: flex-end; }
 .searchControl { align-items: center; }
 .viewToggle { display: inline-flex; padding: 3px; border: 1px solid var(--color-border); border-radius: var(--radius-control); background: var(--color-surface-subtle); }
-.viewToggle button { min-height: 38px; padding: 0 var(--space-4); border: 0; border-radius: 9px; color: var(--color-text-secondary); background: transparent; cursor: pointer; }
+.viewToggle button { min-height: 44px; padding: 0 var(--space-4); border: 0; border-radius: 9px; color: var(--color-text-secondary); background: transparent; cursor: pointer; }
 .viewToggle button[aria-pressed="true"] { color: var(--color-text-primary); background: var(--color-surface); box-shadow: var(--shadow-xs); }
 .runList { display: grid; gap: var(--space-4); }
 .runCard { display: grid; gap: var(--space-5); }
@@ -18,7 +18,7 @@
 .runMetadata dt { color: var(--color-text-secondary); font-size: var(--font-size-xs); }
 .runMetadata dd { margin: 0; }
 .cardActions { justify-content: flex-end; border-top: 1px solid var(--color-border); padding-top: var(--space-4); }
-.cardActions a { min-height: 40px; display: inline-flex; align-items: center; color: var(--color-accent); font-weight: 600; text-decoration: none; }
+.cardActions a { min-height: 44px; display: inline-flex; align-items: center; color: var(--color-accent); font-weight: 600; text-decoration: none; }
 .form { display: grid; gap: var(--space-5); }
 .formGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); }
 .requestError { margin: 0; padding: var(--space-3); color: var(--color-danger); border: 1px solid color-mix(in srgb, var(--color-danger) 25%, transparent); border-radius: var(--radius-control); background: color-mix(in srgb, var(--color-danger) 7%, white); }
