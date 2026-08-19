@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from alembic.config import Config
-from sqlalchemy import inspect, select
+from sqlalchemy import inspect, select, text
 from sqlalchemy.orm import Session
 
 from alembic import command
@@ -30,11 +30,15 @@ def test_clean_upgrade_downgrade_and_reupgrade(tmp_path: Path) -> None:
         "protocol_substeps",
         "protocol_versions",
         "protocols",
+        "run_step_records",
+        "run_substep_records",
         "workspaces",
     }
     assert set(inspect(engine).get_table_names()) == expected_tables
     with Session(engine) as session:
         assert session.scalar(select(Workspace.id)) == DEFAULT_WORKSPACE_ID
+    with engine.connect() as connection:
+        assert connection.execute(text("PRAGMA foreign_key_check")).all() == []
 
     command.downgrade(config, "base")
     assert inspect(engine).get_table_names() == ["alembic_version"]
@@ -43,4 +47,6 @@ def test_clean_upgrade_downgrade_and_reupgrade(tmp_path: Path) -> None:
     assert set(inspect(engine).get_table_names()) == expected_tables
     with Session(engine) as session:
         assert session.scalar(select(Workspace.id)) == DEFAULT_WORKSPACE_ID
+    with engine.connect() as connection:
+        assert connection.execute(text("PRAGMA foreign_key_check")).all() == []
     engine.dispose()

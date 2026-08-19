@@ -1,5 +1,6 @@
 """Import domain models so Alembic can discover shared metadata."""
 
+from app.execution.models import RunStepRecord, RunSubStepRecord
 from app.experiment_runs.models import ExperimentRun
 from app.projects.models import Project
 from app.protocols.models import Protocol, ProtocolStep, ProtocolSubStep, ProtocolVersion
@@ -12,5 +13,7 @@ __all__ = [
     "ProtocolStep",
     "ProtocolSubStep",
     "ProtocolVersion",
+    "RunStepRecord",
+    "RunSubStepRecord",
     "Workspace",
 ]

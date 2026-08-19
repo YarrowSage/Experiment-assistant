@@ -10,6 +10,9 @@ vi.mock("./api", async (importOriginal) => ({
 }));
 vi.mock("@/features/projects/api", () => ({ listProjects: mocks.listProjects }));
 vi.mock("@/features/protocols/api", () => ({ listProtocols: mocks.listProtocols }));
+vi.mock("@/features/execution/execution-panel", () => ({
+  ExecutionPanel: () => <div>Execution panel</div>,
+}));
 
 describe("ExperimentRunDetail", () => {
   beforeEach(() => {

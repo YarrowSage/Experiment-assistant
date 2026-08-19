@@ -14,6 +14,7 @@ from app.projects.models import Project
 from app.workspaces.domain import utc_now
 
 if TYPE_CHECKING:
+    from app.execution.models import RunStepRecord
     from app.protocols.models import ProtocolVersion
 
 
@@ -72,3 +73,8 @@ class ExperimentRun(Base):
 
     project: Mapped[Project] = relationship(lazy="joined")
     protocol_version: Mapped[ProtocolVersion | None] = relationship(lazy="joined")
+    run_steps: Mapped[list[RunStepRecord]] = relationship(
+        back_populates="run",
+        cascade="all, delete-orphan",
+        order_by="RunStepRecord.position",
+    )
