@@ -197,6 +197,12 @@ class EvidenceService:
             for event in self.repository.list_activity(self.workspace_id, run_id)
         ]
 
+    def list_recent_activity(self, limit: int) -> list[ActivityEventResponse]:
+        return [
+            ActivityEventResponse.model_validate(event)
+            for event in self.repository.list_workspace_activity(self.workspace_id, limit)
+        ]
+
     def bundle(self, run_id: UUID) -> EvidenceBundleResponse:
         notes = self.list_notes(run_id, None)
         attachments = self.list_attachments(run_id, None)

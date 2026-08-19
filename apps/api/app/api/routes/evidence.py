@@ -198,3 +198,11 @@ def list_activity(run_id: UUID, service: EvidenceServiceDependency) -> list[Acti
         return service.list_activity(run_id)
     except EVIDENCE_ERRORS as error:
         raise_evidence_http_error(error)
+
+
+@router.get("/activity", response_model=list[ActivityEventResponse])
+def list_recent_activity(
+    service: EvidenceServiceDependency,
+    limit: Annotated[int, Query(ge=1, le=50)] = 10,
+) -> list[ActivityEventResponse]:
+    return service.list_recent_activity(limit)

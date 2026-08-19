@@ -154,3 +154,13 @@ class EvidenceRepository:
                 .order_by(ActivityEvent.created_at.desc(), ActivityEvent.id.desc())
             )
         )
+
+    def list_workspace_activity(self, workspace_id: UUID, limit: int) -> list[ActivityEvent]:
+        return list(
+            self.session.scalars(
+                select(ActivityEvent)
+                .where(ActivityEvent.workspace_id == workspace_id)
+                .order_by(ActivityEvent.created_at.desc(), ActivityEvent.id.desc())
+                .limit(limit)
+            )
+        )

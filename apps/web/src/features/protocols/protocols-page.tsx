@@ -71,7 +71,7 @@ export function ProtocolsPage({ projectId }: { projectId: string }) {
   );
 }
 
-function NewProtocolDialog({ projectId, onOpenChange, onSaved }: { projectId: string; onOpenChange: (open: boolean) => void; onSaved: () => void }) {
+export function NewProtocolDialog({ projectId, onOpenChange, onSaved }: { projectId: string; onOpenChange: (open: boolean) => void; onSaved: () => void }) {
   const formId = useId();
   const [title, setTitle] = useState("");
   const [purpose, setPurpose] = useState("");

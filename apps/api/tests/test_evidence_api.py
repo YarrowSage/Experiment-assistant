@@ -83,6 +83,23 @@ def test_notes_use_explicit_run_and_step_contexts(client: TestClient) -> None:
     assert updated.json()["revision"] == 2
 
 
+def test_workspace_recent_activity_returns_only_persisted_events(client: TestClient) -> None:
+    execution = prepare_run_with_step(client, "Recent Activity")
+    run = execution["run"]
+    client.post(
+        f"/api/v1/experiment-runs/{run['id']}/notes",
+        json={"content": "A real recent observation"},
+    )
+
+    response = client.get("/api/v1/activity", params={"limit": 3})
+    assert response.status_code == 200, response.text
+    activity = response.json()
+    assert len(activity) == 3
+    assert activity[0]["event_type"] == "NOTE_ADDED"
+    assert activity[0]["experiment_run_id"] == run["id"]
+    assert all(event["message"] for event in activity)
+
+
 def test_attachment_metadata_checksum_download_and_path_privacy(
     client: TestClient, test_engine: Engine
 ) -> None:

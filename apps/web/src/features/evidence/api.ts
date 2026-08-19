@@ -1,6 +1,6 @@
 import { buildApiUrl } from "@/lib/api/config";
 
-import type { Attachment, EvidenceBundle, Note } from "./types";
+import type { ActivityEvent, Attachment, EvidenceBundle, Note } from "./types";
 
 type ErrorPayload = {
   detail?: Array<{ msg?: string }> | { code?: string; message?: string } | string;
@@ -51,6 +51,10 @@ export function createNote(runId: string, content: string, runStepId: string | n
     method: "POST",
     body: JSON.stringify({ content, run_step_record_id: runStepId }),
   });
+}
+
+export function listRecentActivity(limit = 10) {
+  return request<ActivityEvent[]>(`/activity?limit=${limit}`);
 }
 
 export async function uploadAttachment(runId: string, file: File, runStepId: string | null, description: string) {
