@@ -145,9 +145,9 @@ are deferred.
 
 ### Progressive complexity
 
-Simple experiments should remain simple. Specialized animal, cell, plate, and
-analysis capabilities should appear when relevant rather than crowd every
-screen.
+Simple experiments should remain simple. The four specialized Workbenches —
+Animal, Cell, Plate, and Chromatography — should appear when relevant rather
+than crowd every screen. Analysis remains a separate top-level module.
 
 ## 6. Device Strategy
 
@@ -162,7 +162,7 @@ their feature emphasis differs.
 | Experiment execution | Available | Primary experience |
 | Notes and media | Full file management | Quick note, photo, upload |
 | Workbenches | Full views and configuration | Field data entry |
-| Analysis | Full workbench | View results; limited quick actions |
+| Analysis | Full analysis workspace | View results; limited quick actions |
 | Calculators | Full catalog | Common calculators |
 | Kits/manuals | Manage and relate | Search and view |
 | Export | Configure and generate | Share existing exports |
@@ -191,11 +191,19 @@ application core.
 
 ### 7.4 Workbench System
 
-Structured workspaces for specific experimental domains. Planned workbenches
-include Animal, Cell, Plate, and Analysis. Workbench records link to experiments
-instead of being copied into them.
+Structured workspaces for specific experimental domains. The accepted V1
+Workbench set is exactly:
 
-### 7.5 Analysis Workbench
+- Animal Workbench;
+- Cell Workbench;
+- Plate Workbench;
+- Chromatography Workbench.
+
+Workbench records link to experiments instead of being copied into them.
+Analysis is a separate top-level product module, not one of the four
+Workbenches.
+
+### 7.5 Analysis
 
 A user-directed workflow for selecting a data source, dataset, variables,
 groups, method, chart, customization, and output. Guided analysis can help with
@@ -277,10 +285,11 @@ object. Today and This Week are focused views over the same planning data.
 ### Workbenches
 
 WorkbenchRecord stores common metadata, lifecycle, links, and attachments.
-Concrete Workbenches may own normalized Animal, Cell, Plate, or other domain
-entities. Limited JSON configuration/metadata is allowed, but one universal JSON
-field is not the sole scientific data model. Definitions are versioned so
-historical records remain interpretable after a workbench evolves.
+Concrete V1 Workbenches may own normalized Animal, Cell, Plate, or
+Chromatography domain entities. Limited JSON configuration/metadata is allowed,
+but one universal JSON field is not the sole scientific data model. Definitions
+are versioned so historical records remain interpretable after a workbench
+evolves.
 
 ### Analysis
 

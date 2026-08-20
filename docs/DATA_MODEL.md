@@ -566,7 +566,9 @@ hidden in extension_metadata.
 
 JSON remains suitable for UI configuration, display hints, flexible metadata,
 analysis configuration, chart configuration, and small extension fields. It
-must not be the only storage mechanism for Animal, Cell, or Analysis data.
+must not be the only storage mechanism for Animal, Cell, Plate, or
+Chromatography data. Analysis is a separate module and likewise owns its
+structured data outside Workbench extension JSON.
 
 ## 20. RunStepWorkbenchLink
 
@@ -618,13 +620,15 @@ one WorkbenchRecord JSON document.
 ## 22. Cell Workbench Record Direction
 
 Cell Workbench may likewise define a concrete model such as CellExperiment,
-CellCulture, CellTreatment, Plate, Well, and CellMeasurement beneath a common
-WorkbenchRecord. Future structured concepts may include:
+CellCulture, CellTreatment, and CellMeasurement beneath a common
+WorkbenchRecord. Plate layouts and Well records belong to the separate Plate
+Workbench and may be linked when a Cell experiment uses them. Future structured
+concepts may include:
 
 - cell line and passage;
 - culture medium and incubator conditions;
 - confluence;
-- plate format and well identity;
+- linked plate and well context;
 - seeding density with unit;
 - treatment, concentration, duration, and controls;
 - images and notes;
@@ -633,9 +637,9 @@ WorkbenchRecord. Future structured concepts may include:
 
 Built-in flows are copied and customized into user protocols. They are not
 immutable enforced procedures. Concentration, duration, density, volume, and
-other quantities use separate numeric value and unit fields. Repeated plate,
-well, treatment, and measurement data must not exist only in a generic JSON
-payload.
+other quantities use separate numeric value and unit fields. Repeated Cell
+treatment and measurement data must not exist only in a generic JSON payload;
+repeated plate and well structure belongs to the Plate Workbench domain.
 
 ## 23. Kit
 

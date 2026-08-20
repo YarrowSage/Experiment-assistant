@@ -24,7 +24,7 @@ Desktop emphasizes planning, management, and analysis:
 - full experiment history;
 - calendar and long-term planning;
 - complete workbench tables and configuration;
-- Analysis Workbench;
+- Analysis module;
 - Excel/CSV data handling;
 - PDF, Excel, and figure export;
 - template and kit management;

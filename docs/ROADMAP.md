@@ -32,7 +32,7 @@ Phases 3–6  Structured scientific Workbenches
    ↓
 Phase 7  User-controlled Analysis
    ↓
-Phase 8  Resources and product-wide refinement
+Phase 8  Resources and product polish
 ```
 
 The generic scientific-record lifecycle precedes specialized Workbenches.
@@ -158,17 +158,22 @@ and readout provenance without hiding scientific data in a universal JSON blob.
 
 ### Goal
 
-Record chromatography runs and fractions with structured method, sample,
-collection, and attachment context.
+Prioritize structured HPLC/UPLC chromatography records while keeping the domain
+extensible to later GC, GC-MS, LC-MS, LC-MS/MS, and custom chromatography.
 
 ### Planned progression
 
-- run/sample/method metadata;
-- fractions and collection records;
-- chromatogram and instrument-file attachments;
+- primary hierarchy: Chromatography Experiment → Method → Batch/Run → Injection;
+- standards/reference substances, calibration, samples/sample preparation,
+  instrument and column profiles, and structured method parameters including
+  pressure, temperature, and time;
+- injection sequence, raw chromatogram/file evidence, and peaks/results;
+- optional system suitability, QC, and validation capabilities;
 - structured source adapters for later Analysis and Export.
 
 Instrument integrations and vendor-specific parsing require separate review.
+Fraction collection is not the primary Phase 6 direction and remains a future
+optional extension only if separately accepted.
 
 ## 10. Phase 7 — Analysis
 
@@ -188,7 +193,7 @@ visualization, and export.
 No method, group, control, X, Y, exclusion, or chart may be silently treated as
 the researcher's choice.
 
-## 11. Phase 8 — Resources + Final Product Polish
+## 11. Phase 8 — Resources + Product Polish
 
 ### Goal
 

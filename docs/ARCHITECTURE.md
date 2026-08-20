@@ -213,17 +213,20 @@ Workbench may own normalized domain entities. For example:
             ├── AnimalMeasurement
             └── AnimalDoseRecord
 
-Cell Workbench may likewise own CellExperiment, CellCulture, CellTreatment,
-Plate/Well, or other reviewed domain entities. JSON is appropriate for UI
-configuration, flexible metadata, analysis/chart configuration, and limited
-extension fields. It must not be the sole storage model for all Animal, Cell, or
-Analysis data.
+The accepted V1 set is Animal Workbench, Cell Workbench, Plate Workbench, and
+Chromatography Workbench. Cell Workbench may own CellExperiment, CellCulture,
+CellTreatment, and CellMeasurement entities. Plate/Well structure belongs to
+Plate Workbench, while Chromatography Workbench owns its reviewed structured
+chromatography records. Analysis is a separate top-level module with its own
+domain model. JSON is appropriate for UI configuration, flexible metadata,
+analysis/chart configuration, and limited extension fields. It must not be the
+sole storage model for the four Workbench domains or for Analysis data.
 
 An integration-owned link record connects a WorkbenchRecord to a
 RunStepRecord. This avoids:
 
 - copying structured workbench data into the experiment record;
-- adding Animal or Cell fields to the experiment core;
+- adding Workbench-specific fields to the experiment core;
 - requiring the experiment module to import every future workbench.
 
 The link may include a relationship type and a short display summary. The

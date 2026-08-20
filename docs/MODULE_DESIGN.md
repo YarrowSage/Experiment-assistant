@@ -38,7 +38,7 @@ Each module should define:
       ├── Planner and Calendar
       ├── Calculator Center
       ├── Workbench System
-      ├── Analysis Workbench
+      ├── Analysis
       ├── Template Library
       ├── Kits and Manuals
       └── Export System
@@ -226,13 +226,15 @@ A concrete Workbench may own normalized entities:
             └── AnimalDoseRecord
 
 Cell Workbench may similarly own CellExperiment, CellCulture, CellTreatment,
-Plate/Well, and measurement records. Analysis keeps its user selections and
-outputs in its own AnalysisSession/analysis domain model.
+and CellMeasurement records. Plate/Well structure belongs to Plate Workbench.
+Analysis keeps its user selections and outputs in its own AnalysisSession and
+analysis domain model.
 
 JSON is allowed for UI configuration, display hints, flexible metadata,
 analysis configuration, chart configuration, and limited extension fields. It
 must not be the sole representation of repeated, relational, time-series,
-queryable, or scientifically meaningful Animal, Cell, or Analysis data.
+queryable, or scientifically meaningful Animal, Cell, Plate, or Chromatography
+data. Analysis is a separate module and likewise owns its structured data.
 
 ### Experiment link
 
@@ -246,17 +248,17 @@ the specific Workbench.
                   └── WorkbenchRecord
 
 The experiment module may display a stable workbench summary and link. It must
-not copy Animal, Cell, or Plate domain data into RunStepRecord.
+not copy Animal, Cell, Plate, or Chromatography domain data into RunStepRecord.
 
-### Future workbench categories
+### Accepted V1 Workbench set
 
 - Animal Workbench;
 - Cell Workbench;
 - Plate Workbench;
-- future laboratory-domain workbenches.
+- Chromatography Workbench.
 
-Analysis Workbench uses the same product language but has a separate analysis
-module because its lifecycle and provenance rules differ.
+These are exactly the four V1 Workbenches. Analysis is a separate top-level
+product module because its lifecycle and provenance rules differ.
 
 ## 7. Animal Workbench
 
@@ -306,10 +308,44 @@ Status: planned scope only.
 
 Users must be able to adapt brand, kit, cell type, concentration, time, and
 laboratory SOP. Built-in templates never become enforced immutable procedures.
-Repeated cell, treatment, plate/well, and measurement data may use concrete
-Cell Workbench entities rather than a universal Workbench JSON record.
+Repeated cell, treatment, and measurement data may use concrete Cell Workbench
+entities rather than a universal Workbench JSON record. Plate and well
+structure remains owned by the separate Plate Workbench.
 
-## 9. Analysis Workbench
+## 9. Plate Workbench
+
+Status: planned scope only.
+
+Plate Workbench owns reusable plate layouts, well identities, sample/control
+assignments, treatments, replicate structure, and plate-level readout
+provenance. Cell and other experiments link to these structured records rather
+than owning duplicate Plate/Well data.
+
+## 10. Chromatography Workbench
+
+Status: planned scope only.
+
+HPLC and UPLC are the first priority. The domain architecture must remain
+extensible to later, separately accepted GC, GC-MS, LC-MS, LC-MS/MS, and custom
+chromatography types.
+
+The primary record hierarchy is:
+
+    Chromatography Experiment
+      └── Method
+            └── Batch/Run
+                  └── Injection
+
+The structured direction includes standards/reference substances, calibration,
+samples and sample preparation, instrument and column profiles, method
+parameters, pressure/temperature/time conditions, injection sequence, raw
+chromatogram or file evidence, and peaks/results. System suitability, QC, and
+validation records are optional reviewed capabilities.
+
+Fraction collection is not the primary Phase 6 model. Fractions may be added as
+a future optional extension only if separately accepted.
+
+## 11. Analysis
 
 ### Owns
 
@@ -359,8 +395,8 @@ An adapter:
 - returns a tabular data contract and input fingerprint;
 - never changes source data.
 
-Planned sources include Animal and Cell workbenches, experiment attachments,
-Excel, CSV, and manual entry.
+Planned sources include Animal, Cell, Plate, and Chromatography Workbenches,
+experiment attachments, Excel, CSV, and manual entry.
 
 ### Analysis-tool contract
 
@@ -394,7 +430,7 @@ before confirmation and must preserve every accepted choice in AnalysisSession.
 
 The wizard cannot silently choose a scientifically meaningful role.
 
-## 10. Template Library
+## 12. Template Library
 
 ### Owns
 
@@ -419,7 +455,7 @@ The wizard cannot silently choose a scientifically meaningful role.
   through stable optional references;
 - templates do not execute business behavior.
 
-## 11. Kits and Manuals
+## 13. Kits and Manuals
 
 ### Owns
 
@@ -437,7 +473,7 @@ Protocol.
 OCR and AI manual parsing are later capabilities. Manual content must not be
 transmitted to AI without an accepted privacy and consent design.
 
-## 12. Export System
+## 14. Export System
 
 ### Owns
 
@@ -464,7 +500,7 @@ A renderer converts a canonical form to one format. Examples:
 | ExperimentRun | PDF, Markdown |
 | Animal Workbench | Excel, CSV, PDF |
 | Cell Workbench | Excel, CSV |
-| Analysis Workbench | PNG, SVG, PDF, processed Excel |
+| Analysis | PNG, SVG, PDF, processed Excel |
 
 ### Export service flow
 
@@ -483,7 +519,7 @@ A renderer converts a canonical form to one format. Examples:
 Each module must not build a separate PDF/Excel subsystem. Specialized content
 belongs in its source provider; format mechanics belong in renderers.
 
-## 13. Core Services
+## 15. Core Services
 
 ### Data access
 
@@ -524,7 +560,7 @@ Typed, scoped configuration. Secrets remain outside source control.
 Design tokens and reusable accessible components. Shared UI has no database or
 module repository access.
 
-## 14. Integration Approach
+## 16. Integration Approach
 
 Early cross-module operations should use application services and simple
 in-process events only when they reduce coupling.
@@ -540,7 +576,7 @@ Events are not a justification for an event broker in early phases. Reliable
 outbox infrastructure is considered only when external services or
 synchronization make it necessary.
 
-## 15. Adding New Capabilities
+## 17. Adding New Capabilities
 
 ### New Workbench
 
@@ -569,7 +605,7 @@ change unless they want to declare support for that format.
 Add validated content and preview rules behind the Template module. Copying must
 still produce independent user content.
 
-## 16. Anti-patterns
+## 18. Anti-patterns
 
 Do not:
 
