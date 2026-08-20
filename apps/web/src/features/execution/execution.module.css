@@ -1,0 +1,41 @@
+.execution { display: grid; gap: var(--space-5); }
+.executionHeader, .startCard { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: var(--space-4); }
+.executionHeader > *, .startCard > * { min-width: 0; }
+.executionHeader h2, .startCard h2, .notReady h2 { margin: var(--space-1) 0 0; font-size: var(--font-size-xl); }
+.executionHeader p, .startCard p, .notReady p { margin: var(--space-2) 0 0; color: var(--color-text-secondary); }
+.eyebrow { color: var(--color-text-tertiary); font-size: var(--font-size-xs); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.runControls, .stepControls, .stepNavigation { display: flex; align-items: center; gap: var(--space-3); }
+.progressTrack { height: 6px; grid-column: 1 / -1; overflow: hidden; border-radius: var(--radius-pill); background: var(--color-surface-subtle); }
+.progressTrack span { display: block; height: 100%; border-radius: inherit; background: var(--color-accent); transition: width var(--transition-standard); }
+.requestError, .feedback, .pausedNotice { margin: 0; padding: var(--space-3) var(--space-4); border-radius: var(--radius-control); }
+.requestError { color: var(--color-danger); border: 1px solid #f3caca; background: var(--color-danger-soft); }
+.feedback { color: var(--color-success); border: 1px solid #bfe4ca; background: #f1faf4; }
+.completionNote { display: grid; gap: var(--space-2); }
+.completionNote p { margin: 0; color: var(--color-text-secondary); white-space: pre-wrap; }
+.currentStep { border-color: color-mix(in srgb, var(--color-accent) 22%, var(--color-border)); box-shadow: var(--shadow-sm); }
+.currentTitle { display: grid; gap: var(--space-1); }
+.currentTitle > span { color: var(--color-accent-text); font-size: var(--font-size-sm); font-weight: 700; }
+.currentContent { display: grid; gap: var(--space-5); }
+.instruction { margin: 0; font-size: var(--font-size-lg); line-height: 1.65; }
+.precaution { margin: 0; padding: var(--space-3); border-radius: var(--radius-control); background: #fff8e8; }
+.substeps { display: grid; gap: var(--space-3); margin: 0; padding-left: var(--space-6); }
+.substeps li { padding-left: var(--space-2); }
+.substeps strong, .substeps span { display: block; }
+.substeps span { margin-top: var(--space-1); color: var(--color-text-secondary); }
+.timer { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-4); border: 1px solid var(--color-border); border-radius: var(--radius-card); background: var(--color-surface-subtle); }
+.timer > div { display: grid; gap: 2px; }
+.timer span, .timer small { color: var(--color-text-secondary); }
+.timer strong { font-variant-numeric: tabular-nums; font-size: clamp(1.75rem, 5vw, 2.5rem); line-height: 1.1; }
+.largeAction { min-height: 52px; padding-inline: var(--space-6); font-size: var(--font-size-base); }
+.pausedNotice { color: var(--color-text-secondary); background: var(--color-surface-subtle); }
+.completedMessage { display: flex; align-items: center; gap: var(--space-2); color: var(--color-success); font-weight: 600; }
+.stepNavigation { justify-content: space-between; }
+.stepNavigation > span { color: var(--color-text-secondary); font-size: var(--font-size-sm); }
+.allSteps { display: grid; gap: var(--space-2); margin: 0; padding: 0; list-style: none; }
+.allSteps button { width: 100%; min-height: 52px; display: grid; grid-template-columns: 32px 1fr auto; align-items: center; gap: var(--space-3); padding: var(--space-2) var(--space-3); text-align: left; border: 0; border-radius: var(--radius-control); background: transparent; cursor: pointer; }
+.allSteps button:hover, .allSteps button[aria-current="step"] { background: var(--color-surface-subtle); }
+.allSteps button > span:first-child { display: grid; width: 30px; height: 30px; place-items: center; border-radius: 50%; background: var(--color-surface-subtle); font-weight: 700; }
+.allSteps button > span:nth-child(2) { display: grid; gap: 2px; }
+.allSteps small { color: var(--color-text-tertiary); text-transform: capitalize; }
+.notReady { display: flex; align-items: flex-start; gap: var(--space-4); }
+@media (max-width: 47.99rem) { .executionHeader, .startCard { grid-template-columns: 1fr; } .runControls { flex-wrap: wrap; justify-content: flex-start; } .runControls > button { flex: 1 1 auto; } .largeAction { width: 100%; min-height: 58px; } .stepNavigation button { min-width: 44px; } .stepNavigation button { font-size: 0; } .stepNavigation svg { width: 20px; height: 20px; } .instruction { font-size: var(--font-size-base); } }

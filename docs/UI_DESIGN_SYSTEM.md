@@ -1,7 +1,8 @@
 # UI Design System
 
-Status: Accepted Phase 0 direction; P1-02 shared UI and app-shell foundations implemented
-Last reviewed: 2026-08-19
+Status: Shared UI, responsive application shell, Phase 1 product screens, and
+installable PWA presentation baseline implemented
+Last reviewed: 2026-08-20
 
 ## 1. Design Intent
 

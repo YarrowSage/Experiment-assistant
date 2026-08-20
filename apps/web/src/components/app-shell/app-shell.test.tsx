@@ -29,7 +29,10 @@ describe("AppShell", () => {
       "aria-current",
       "page",
     );
-    expect(screen.getAllByText("Planned")).toHaveLength(1);
+    expect(screen.getByRole("link", { name: "All Experiments" })).toHaveAttribute(
+      "href",
+      "/experiments/runs",
+    );
     expect(screen.getByRole("main")).toHaveTextContent("Experiments content");
   });
 

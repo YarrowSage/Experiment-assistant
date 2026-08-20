@@ -43,10 +43,12 @@ def test_session_factory(test_engine: Engine) -> sessionmaker[Session]:
 def client(
     database_url: str,
     test_session_factory: sessionmaker[Session],
+    tmp_path: Path,
 ) -> Generator[TestClient, None, None]:
     settings = Settings(
         environment="test",
         database_url=database_url,
+        storage_root=tmp_path / "storage",
         cors_origins=[],
         _env_file=None,
     )

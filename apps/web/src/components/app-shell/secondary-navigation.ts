@@ -39,8 +39,8 @@ export const secondaryNavigationRules: readonly SecondaryNavigationRule[] = [
         title: "Project",
         items: [
           { href: projectPath, label: "Overview" },
-          { label: "Experiments" },
-          { label: "Protocols" },
+          { href: `${projectPath}/experiments`, label: "Experiments" },
+          { href: `${projectPath}/protocols`, label: "Protocols" },
           { label: "Planner" },
           { label: "Files" },
           { label: "Analysis" },
@@ -52,7 +52,7 @@ export const secondaryNavigationRules: readonly SecondaryNavigationRule[] = [
     title: "Experiments",
     items: [
       { href: "/experiments/projects", label: "Projects" },
-      { label: "All Experiments" },
+      { href: "/experiments/runs", label: "All Experiments" },
     ],
   }),
   createModuleRule("/workbenches", {

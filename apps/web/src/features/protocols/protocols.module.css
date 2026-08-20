@@ -1,0 +1,28 @@
+.pageStack { display: grid; gap: var(--space-7); }
+.protocolList, .stepList { display: grid; gap: var(--space-4); }
+.protocolCard { display: flex; align-items: center; justify-content: space-between; gap: var(--space-5); }
+.protocolCard h2 { margin: 0; font-size: var(--font-size-lg); }
+.protocolCard p { margin: var(--space-2) 0 0; color: var(--color-text-secondary); }
+.protocolCard a { color: inherit; text-decoration: none; }
+.protocolCard a:hover, .protocolMeta > a { color: var(--color-accent-text); }
+.protocolMeta, .headerActions, .stepActions, .versionState { display: flex; align-items: center; gap: var(--space-3); }
+.protocolMeta > a { font-weight: 600; }
+.form { display: grid; gap: var(--space-5); }
+.formGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); }
+.requestError { margin: 0; padding: var(--space-3); color: var(--color-danger); border: 1px solid #f3caca; border-radius: var(--radius-control); background: var(--color-danger-soft); }
+.versionBar { display: flex; align-items: end; justify-content: space-between; gap: var(--space-5); }
+.versionBar > :first-child { min-width: 15rem; }
+.versionState { color: var(--color-text-secondary); font-size: var(--font-size-sm); }
+.versionState span { display: flex; align-items: center; gap: var(--space-2); }
+.stepHeading { display: flex; align-items: flex-start; gap: var(--space-3); }
+.stepHeading p { margin: var(--space-1) 0 0; color: var(--color-text-secondary); font-size: var(--font-size-sm); }
+.stepNumber { display: grid; width: 30px; height: 30px; flex: 0 0 auto; place-items: center; color: var(--color-accent-text); border-radius: 50%; background: var(--color-accent-soft); font-weight: 700; }
+.stepContent { display: grid; gap: var(--space-3); }
+.stepContent p, .stepContent ol { margin: 0; color: var(--color-text-secondary); }
+.stepContent ol { display: grid; gap: var(--space-2); padding-left: var(--space-6); }
+.emptySteps { text-align: center; padding: var(--space-6); }
+.emptySteps h2 { margin: 0; font-size: var(--font-size-lg); }
+.emptySteps p { margin: var(--space-2) auto 0; max-width: 38rem; color: var(--color-text-secondary); }
+.checkbox { display: flex; align-items: center; gap: var(--space-2); font-weight: 600; }
+.checkbox input { width: 18px; height: 18px; accent-color: var(--color-accent); }
+@media (max-width: 47.99rem) { .protocolCard, .versionBar, .versionState { align-items: stretch; flex-direction: column; } .protocolMeta { justify-content: space-between; } .formGrid { grid-template-columns: 1fr; } .headerActions { width: 100%; } .headerActions button { flex: 1; } .stepActions { gap: var(--space-1); } }

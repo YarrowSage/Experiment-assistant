@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Experiment Assistant">
+  <rect width="512" height="512" fill="#f7f8fa"/>
+  <rect x="52" y="52" width="408" height="408" rx="118" fill="#ffffff" stroke="#d9eaff" stroke-width="12"/>
+  <circle cx="256" cy="256" r="146" fill="#eaf4ff"/>
+  <path d="M218 134h76M232 134v98l-78 125c-10 17 2 39 22 39h160c20 0 32-22 22-39l-78-125v-98" fill="none" stroke="#007aff" stroke-linecap="round" stroke-linejoin="round" stroke-width="24"/>
+  <path d="M198 320c34-22 82 21 116 0l34 55c6 10-1 21-12 21H176c-11 0-18-11-12-21z" fill="#007aff" opacity="0.9"/>
+  <circle cx="229" cy="279" r="12" fill="#007aff"/>
+  <circle cx="286" cy="262" r="9" fill="#007aff"/>
+</svg>

@@ -1,7 +1,7 @@
 # Phase 1 Repository Audit and Issue Plan
 
-Status: Audit complete; implementation authorization now follows the reviewed
-GitHub issue sequence and explicit user approval
+Status: Audit complete; P1-01 through P1-12 implemented on reviewed feature
+branches/commits and awaiting final Phase 1 pull-request review
 Audit baseline: `main` at `c6b8f71e7022705a87b389d68f9bac67e144d151`
 Audit date: 2026-08-19
 
@@ -76,12 +76,12 @@ planning or terminology differences are resolved explicitly:
 3. Phase 0 names an actual execution `ExperimentRun` and a step execution
    `RunStepRecord`. These accepted terms take precedence over the shorthand
    `Experiment` and `ExperimentStepRun` in the new instruction.
-4. Phase 0 requires every Project to belong to a Workspace. P1-03 will create
-   the automatic default Workspace boundary without accounts, permissions, or
+4. Phase 0 requires every Project to belong to a Workspace. P1-03 created the
+   automatic Default Workspace boundary without accounts, permissions, or
    Workspace UI.
-5. P1-01 configures SQLAlchemy and Alembic to verify the persistence boundary.
-   It creates no empty business schema or migration. The first real business
-   schema and Alembic revision belong to P1-03.
+5. P1-01 configured SQLAlchemy and Alembic to verify the persistence boundary
+   without an empty business migration. P1-03 then introduced the first real
+   schema and Alembic revision.
 6. ProtocolVersion immutability, completed-record amendments, structured
    Workbench domain data, and separate scientific values/units remain mandatory
    and are not weakened by the new issue breakdown.
@@ -103,18 +103,21 @@ planning or terminology differences are resolved explicitly:
 | 11 | [#12 P1-11](https://github.com/YarrowSage/Experiment-assistant/issues/12) | PWA and responsive polish |
 | 12 | [#13 P1-12](https://github.com/YarrowSage/Experiment-assistant/issues/13) | Phase 1 integration QA |
 
-## 6. Recommended Delivery Order
+## 6. Actual Delivery Order
 
-Implement the issues in the listed order, with two controlled exceptions:
+The issues were implemented in the listed order. The reviewed plan allowed two
+controlled scheduling exceptions:
 
 - P1-10 can begin after P1-02 but should integrate only after core routes are
   stable.
 - P1-11 can establish manifest work after P1-02, but mobile execution QA waits
   for P1-06.
 
-Every issue uses its own branch and pull request. P1-01 must be reviewed and
-merged before P1-02 begins. No later issue is implemented as part of this
-foundation change.
+P1-01, P1-02, and P1-03 were reviewed and merged independently. Under the
+subsequent explicit Phase 1 Completion instruction, P1-04 through P1-12 use
+independent scoped commits on `feature/phase1-completion` and one final Draft
+Pull Request. This approved exception does not combine their implementation
+scope or authorize Phase 2 work.
 
 ## 7. P1-01 Foundation Choices
 

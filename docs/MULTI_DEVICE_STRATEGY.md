@@ -1,7 +1,8 @@
 # Multi-device Strategy
 
-Status: Accepted Phase 0 strategy; synchronization is not implemented
-Last reviewed: 2026-08-19
+Status: Responsive installable PWA baseline implemented; synchronization and
+offline mutation handling are not implemented
+Last reviewed: 2026-08-20
 
 ## 1. Product Position
 
@@ -23,7 +24,7 @@ Desktop emphasizes planning, management, and analysis:
 - full experiment history;
 - calendar and long-term planning;
 - complete workbench tables and configuration;
-- Analysis Workbench;
+- Analysis module;
 - Excel/CSV data handling;
 - PDF, Excel, and figure export;
 - template and kit management;

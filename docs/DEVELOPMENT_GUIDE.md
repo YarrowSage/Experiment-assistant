@@ -1,27 +1,29 @@
 # Development Guide
 
-Status: Accepted Phase 0 engineering direction; no application stack is installed
-Last reviewed: 2026-08-19
+Status: Accepted engineering direction with the Phase 1 stack and generic
+experiment foundation implemented
+Last reviewed: 2026-08-20
 
 ## 1. Recommended Stack
 
-Subject to Phase 0 acceptance:
+The lock files and package manifests are authoritative for exact versions:
 
-| Layer | Recommendation | Phase 0 state |
+| Layer | Accepted direction | Current state |
 | --- | --- | --- |
-| Web UI | Next.js App Router, React, TypeScript | Proposed, not installed |
-| Mobile early | Responsive PWA from the same web app | Proposed, not implemented |
-| API | FastAPI and Pydantic | Proposed, not installed |
-| Persistence | SQLAlchemy and Alembic | Proposed, not installed |
-| Local database | SQLite | Proposed for early single-server development |
+| Web UI | Next.js App Router, React, TypeScript | Implemented |
+| Mobile early | Responsive PWA from the same web app | Installable responsive baseline implemented |
+| API | FastAPI and Pydantic | Implemented under `/api/v1` |
+| Persistence | SQLAlchemy and Alembic | Implemented through revision `0006` |
+| Local database | SQLite | Implemented for early single-server development |
 | Hosted database | PostgreSQL | Future, not deployed |
-| Local files | FileStorage local adapter | Designed only |
+| Local files | FileStorage local adapter | Implemented for Phase 1 evidence |
 | Hosted files | S3-compatible/object-storage adapter | Future, provider undecided |
-| Production UI | Custom product UI using accessible reusable components | Designed only |
+| Production UI | Custom product UI using accessible reusable components | Phase 1 foundation implemented |
 | Streamlit | Not part of the production application | Rejected as primary UI |
 
-Do not copy dependency versions from this document. At Phase 1 start, select
-current stable versions, record them in lock files, and verify compatibility.
+Do not copy dependency versions from this document. Use `package.json`,
+`pnpm-lock.yaml`, `pyproject.toml`, and `uv.lock`. The supported local toolchain
+is Node.js 24 LTS, pnpm 11.19.0, Python 3.12.x, and uv 0.12.5.
 
 ## 2. Frontend Evaluation
 
@@ -212,18 +214,18 @@ change but does not eliminate behavioral testing.
 
 ## 7. File Storage Plan
 
-Planned local runtime layout:
+The Phase 1 local adapter stores evidence below the configurable
+`EA_STORAGE_ROOT`; its default runtime layout is:
 
     data/
-      database/
-      uploads/
-      manuals/
-      images/
-      exports/
-      backups/
+      experiment_assistant.db
+      storage/
+        runtime/
+          attachments/
 
-These directories are not created in Phase 0. When introduced, their runtime
-contents must be ignored by Git.
+Runtime contents are ignored by Git. Database rows retain attachment metadata,
+logical storage keys, size, media type, and SHA-256 checksum. Physical local
+paths are never part of API responses.
 
 Rules:
 
@@ -239,31 +241,31 @@ Rules:
 Object-storage provider, encryption, retention, and signed-URL approach remain
 open until deployment requirements exist.
 
-## 8. Planned Code Organization
+## 8. Code Organization
 
-Phase 1 may create:
+Phase 1 created:
 
     apps/
       web/
       api/
-    packages/
-      api-contracts/
-      ui/
     docs/
+
+Shared `packages/` are still deferred until a concrete repeated use justifies
+them.
 
 Backend code should be organized by modules:
 
     app/
       core/
-      experiments/
-      planner/
-      calculators/
-      workbenches/
-      analysis/
-      templates/
-      kits/
-      exports/
-      integrations/
+      api/
+      core/
+      workspaces/
+      projects/
+      protocols/
+      experiment_runs/
+      execution/
+      evidence/
+      amendments/
 
 Each backend module may contain domain, application, presentation, and
 infrastructure subpackages only when their size warrants it. Do not create empty
@@ -291,7 +293,7 @@ than one client version exists.
 
 ## 10. Development Workflow
 
-The future workflow is:
+The current and future workflow is:
 
     Issue
       ↓
@@ -332,9 +334,6 @@ The future workflow is:
 - open a pull request and explain what changed, why, and how it was checked;
 - merge only after review and passing required checks;
 - remove branches after a safe merge when appropriate.
-
-Phase 0 documentation in the current task is intentionally not committed or
-pushed without explicit authorization.
 
 ## 11. Coding Practices for Later Phases
 
@@ -390,7 +389,8 @@ Never report a check as passing if it was not run.
 
 ## 13. Schema Migration Practice
 
-Beginning with the first Phase 2 business schema:
+Phase 1 contains a linear Alembic chain from `0001` through `0006`. For every
+subsequent schema change:
 
 1. change the conceptual/accepted model if needed;
 2. create an Alembic migration;
@@ -418,23 +418,19 @@ Exact choices for calendar, table, charts, forms, state/query management, UI
 primitives, package manager, and Python environment manager are open Phase 1 or
 later decisions.
 
-## 15. Phase 1 Preparation
+## 15. Phase 1 Completion Boundary
 
-After Phase 0 acceptance, the first formal implementation task should:
+Phase 1 now implements the repository foundation, responsive shell, Default
+Workspace ownership boundary, Projects, immutable Protocol Versions, generic
+ExperimentRuns, execution records, evidence, activity history, explicit
+completion, amendments, real-data Home/Planner views, planned product-area
+shells, and PWA installability.
 
-1. create a GitHub issue for Application Foundation and Shell;
-2. create feature/app-shell;
-3. initialize only the accepted web/API workspace;
-4. add formatter, linter, type check, and test configuration;
-5. create a responsive shell and design tokens using synthetic placeholders;
-6. create only minimal backend health/version endpoints if needed to verify the
-   boundary;
-7. add PWA manifest/installability foundation;
-8. document local setup;
-9. open a pull request for review.
-
-Do not implement Project, Protocol, Calendar, Calculator, Workbench, Analysis,
-Export, authentication, or synchronization in Phase 1.
+It does not implement authentication, Workspace membership/permissions,
+multi-user synchronization, offline mutation queues, conflict resolution,
+specialized Workbench domain models, scientific Analysis engines, deployment,
+or native applications. Those capabilities require separately approved future
+issues and must not be inferred from the PWA manifest or current UI shells.
 
 ## 16. Official Technical References
 

@@ -220,7 +220,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       </Dialog>
 
       <Dialog
-        description="Project creation is available; other record types remain planned."
+        description="Project, Experiment, and Protocol creation are available."
         footer={
           <Button variant="secondary" onClick={() => setDialog(null)}>
             Close
@@ -231,8 +231,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         onOpenChange={(open) => setDialog(open ? "new" : null)}
       >
         <p className={styles.modalCopy}>
-          Create and manage real Projects from the Projects area. Experiment and Protocol creation
-          will appear only after their domain work is reviewed.
+          Create and manage real Projects, generic Experiments, and immutable Protocol versions.
         </p>
         <div className={styles.modalNotice}>
           <strong>Project creation is available</strong>
@@ -243,6 +242,28 @@ export function AppShell({ children }: { children: ReactNode }) {
             onClick={() => setDialog(null)}
           >
             Open Projects
+          </Link>
+        </div>
+        <div className={styles.modalNotice}>
+          <strong>Experiment creation is available</strong>
+          <p>Experiments preserve planned time independently from future actual execution.</p>
+          <Link
+            className={styles.modalActionLink}
+            href="/experiments/runs"
+            onClick={() => setDialog(null)}
+          >
+            Open All Experiments
+          </Link>
+        </div>
+        <div className={styles.modalNotice}>
+          <strong>Protocol creation is available</strong>
+          <p>Open a Project to draft ordered steps and publish an immutable version.</p>
+          <Link
+            className={styles.modalActionLink}
+            href="/experiments/projects"
+            onClick={() => setDialog(null)}
+          >
+            Choose a Project
           </Link>
         </div>
       </Dialog>

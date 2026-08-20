@@ -3,10 +3,12 @@
 A modular, multi-device laboratory planning, execution, recording, management,
 and analysis assistant for scientific research.
 
-> Current status: Phase 1 is active. P1-01 established the web/API foundation,
-> P1-02 added the responsive product shell, and P1-03 implements the Default
-> Workspace ownership boundary plus API-backed Project management. Protocols,
-> ExperimentRuns, Workspace UI, and later scientific workflows remain planned.
+> Current status: the complete Phase 1 generic experiment foundation is
+> implemented on its review branch. It includes Projects, immutable Protocol
+> versions, Experiment planning and execution, research evidence, completed
+> record amendments, the real-data Home/Planner views, and an installable
+> responsive PWA baseline. Specialized Workbenches, Analysis workflows,
+> accounts, and synchronization remain planned.
 
 ## Vision
 
@@ -33,18 +35,22 @@ packages and business modules will be added when an accepted issue needs them.
 
 ## Prerequisites
 
-- Node.js 24 LTS (Next.js requires Node.js 20.9 or newer)
+- Node.js 24 LTS (do not substitute Node.js 25/26)
 - pnpm 11.19.0
-- Python 3.12
+- Python 3.12.x (do not substitute Python 2.7, 3.13, or 3.14)
 - uv 0.12.5
 
-On Windows, after installing Node.js 24 LTS and Python 3.12, the remaining tools
-can be installed with:
+The repository `packageManager` field is authoritative for pnpm. Prefer
+Corepack so the package-manager version does not drift:
 
 ```powershell
-npm install --global pnpm@11.19.0
+corepack enable
+corepack prepare pnpm@11.19.0 --activate
 py -3.12 -m pip install --user uv==0.12.5
 ```
+
+On Windows, `python` may still resolve to an unrelated Python 2.7 installation.
+Use `py -3.12` (or the explicit Python 3.12 executable) for this project.
 
 ## First-time Setup
 
@@ -89,20 +95,32 @@ Useful API URLs:
 - database readiness: <http://localhost:8000/api/v1/ready>
 - interactive API documentation: <http://localhost:8000/docs>
 - Projects: <http://localhost:8000/api/v1/projects>
+- Protocols: <http://localhost:8000/api/v1/protocols>
+- Experiments: <http://localhost:8000/api/v1/experiment-runs>
 
 The health endpoint checks the API process. The readiness endpoint separately
 executes a database query so infrastructure failures are visible. The migration
 creates one stable Default Workspace; application startup verifies it
 idempotently. There is intentionally no Workspace selector or account system.
 
-Project endpoints are versioned under `/api/v1/projects` and support create,
-list/filter, read, revision-checked update, and archive. Projects are never hard
-deleted. The web Project interface is available at
-<http://localhost:3000/experiments/projects>.
+All business endpoints are versioned under `/api/v1`. Projects and Experiments
+use optimistic revisions and are archived instead of hard deleted. Published
+Protocol Versions are immutable, and every protocol-backed Experiment keeps the
+exact version it used. Planned timestamps remain separate from actual execution
+timestamps.
 
-The implemented Project lifecycle is `planning`, `active`, `paused`,
-`completed`, and `archived`. The frozen `paused` value supersedes the older
-Phase 0 `on_hold` proposal.
+The execution interface supports persisted step snapshots, timestamp-based
+timers, pause/resume, notes, image/PDF/data attachments, activity history, and
+explicit Experiment completion. Completed records reject ordinary edits;
+transparent amendments retain the original value, correction, reason, time,
+and revision transition. This is a scientific integrity foundation, not a
+claim of GLP/GxP or other regulatory compliance.
+
+Uploaded bytes use a backend-owned `FileStorage` abstraction. The Phase 1 local
+adapter stores runtime files below `EA_STORAGE_ROOT` (default:
+`apps/api/data/storage/runtime`), records metadata and SHA-256 checksums in the
+database, and never exposes physical paths through the API. The default upload
+limit is 50 MiB and can be configured with `EA_MAX_UPLOAD_BYTES`.
 
 ## Checks
 
@@ -124,7 +142,8 @@ uv run alembic heads
 uv run alembic current
 ```
 
-To validate the first business migration manually on disposable local data:
+To validate the complete Phase 1 migration chain manually on disposable local
+data:
 
 ```powershell
 uv run alembic upgrade head
@@ -137,14 +156,20 @@ backup and rollback plan.
 
 ## Current Limitations
 
-- Project management is the only implemented business domain. All Projects
-  belong to the automatic Default Workspace.
-- All Experiments, project Protocols, Planner, Files, and Analysis remain
-  honestly marked as planned.
+- All records belong to one automatic Default Workspace. There is no Workspace
+  selector.
+- Workbench cards, Analysis areas, and most Resources remain honest planned
+  shells. Planner currently presents real planned Experiment visibility without
+  a dependency or scheduling engine.
 - Workspace accounts, membership, permissions, and Workspace UI do not exist.
-- SQLite is for early local, single-process development only.
-- Authentication, synchronization, uploads, PWA installability, deployment,
-  and all scientific workflows remain planned.
+- Authentication, authorization, multi-user collaboration, hosted deployment,
+  and object storage are not implemented.
+- SQLite and local file storage are for early local, single-process development
+  only.
+- The PWA provides installability and responsive presentation only. There is no
+  service-worker mutation queue, offline-first data store, conflict resolution,
+  background upload, push notification, or automatic synchronization.
+- The current generic workflow is not a GLP/GxP compliance system.
 
 ## Documentation
 

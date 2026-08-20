@@ -2,6 +2,8 @@ from uuid import UUID
 
 from sqlalchemy.orm import Session
 
+from app.evidence.activity import ActivityRecorder
+from app.evidence.domain import ActivityType
 from app.projects.domain import (
     ProjectLifecycleError,
     ProjectStatus,
@@ -24,6 +26,7 @@ class ProjectService:
         self.session = session
         self.workspace_id = workspace_id
         self.repository = ProjectRepository(session)
+        self.activity = ActivityRecorder(session, workspace_id)
 
     def create(self, payload: ProjectCreate) -> Project:
         now = utc_now()
@@ -41,6 +44,11 @@ class ProjectService:
             revision=1,
         )
         self.repository.add(project)
+        self.activity.record(
+            ActivityType.PROJECT_CREATED,
+            f"Project created: {project.title}",
+            project_id=project.id,
+        )
         self.session.commit()
         return project
 

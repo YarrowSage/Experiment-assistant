@@ -53,7 +53,10 @@ describe("secondary navigation", () => {
       href: "/experiments/projects",
       label: "Projects",
     });
-    expect(navigation?.items[1]).toEqual({ label: "All Experiments" });
+    expect(navigation?.items[1]).toEqual({
+      href: "/experiments/runs",
+      label: "All Experiments",
+    });
   });
 
   it("provides the frozen contextual navigation for a specific Project", () => {
@@ -68,6 +71,12 @@ describe("secondary navigation", () => {
       "Analysis",
     ]);
     expect(navigation?.items[0]?.href).toBe("/experiments/projects/project-1");
+    expect(navigation?.items[1]?.href).toBe(
+      "/experiments/projects/project-1/experiments",
+    );
+    expect(navigation?.items[2]?.href).toBe(
+      "/experiments/projects/project-1/protocols",
+    );
   });
 
   it("prefers a more specific contextual rule over its module fallback", () => {

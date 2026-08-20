@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from alembic.config import Config
-from sqlalchemy import inspect, select
+from sqlalchemy import inspect, select, text
 from sqlalchemy.orm import Session
 
 from alembic import command
@@ -22,15 +22,37 @@ def test_clean_upgrade_downgrade_and_reupgrade(tmp_path: Path) -> None:
 
     command.upgrade(config, "head")
     engine = create_database_engine(database_url)
-    assert set(inspect(engine).get_table_names()) == {"alembic_version", "projects", "workspaces"}
+    expected_tables = {
+        "alembic_version",
+        "activity_events",
+        "amendments",
+        "experiment_runs",
+        "experiment_run_attachments",
+        "file_attachments",
+        "notes",
+        "projects",
+        "protocol_steps",
+        "protocol_substeps",
+        "protocol_versions",
+        "protocols",
+        "run_step_records",
+        "run_step_attachments",
+        "run_substep_records",
+        "workspaces",
+    }
+    assert set(inspect(engine).get_table_names()) == expected_tables
     with Session(engine) as session:
         assert session.scalar(select(Workspace.id)) == DEFAULT_WORKSPACE_ID
+    with engine.connect() as connection:
+        assert connection.execute(text("PRAGMA foreign_key_check")).all() == []
 
     command.downgrade(config, "base")
     assert inspect(engine).get_table_names() == ["alembic_version"]
 
     command.upgrade(config, "head")
-    assert set(inspect(engine).get_table_names()) == {"alembic_version", "projects", "workspaces"}
+    assert set(inspect(engine).get_table_names()) == expected_tables
     with Session(engine) as session:
         assert session.scalar(select(Workspace.id)) == DEFAULT_WORKSPACE_ID
+    with engine.connect() as connection:
+        assert connection.execute(text("PRAGMA foreign_key_check")).all() == []
     engine.dispose()
