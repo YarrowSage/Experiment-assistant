@@ -40,7 +40,7 @@ export function ExecutionPanel({ run, onRunChanged }: { run: ExperimentRun; onRu
     }
     void loadExecution();
     return () => { ignore = true; };
-  }, [run.id]);
+  }, [run.id, run.revision]);
 
   async function mutate(action: () => Promise<RunExecution>, success: string) {
     setWorking(true); setError(null); setFeedback(null);
@@ -54,11 +54,15 @@ export function ExecutionPanel({ run, onRunChanged }: { run: ExperimentRun; onRu
   if (loading) return <Card><LoadingState label="Loading execution" /></Card>;
   if (error && !execution) return <Card><ErrorState title="Execution could not be loaded" description={error} onRetry={() => void load()} /></Card>;
   const current = execution ?? { run, steps: [] };
+  const completed = current.run.completed_at !== null;
 
-  if (["draft", "cancelled", "archived"].includes(current.run.status)) {
+  if (["draft", "cancelled"].includes(current.run.status) || (current.run.status === "archived" && !completed)) {
     return <Card><div className={styles.notReady}><ListChecks aria-hidden="true" size={22} /><div><h2>Execution is not available</h2><p>{current.run.status === "draft" ? "Set this Experiment to Planned or Ready before starting." : "This Experiment is not in an executable state."}</p></div></div></Card>;
   }
   if (["planned", "ready"].includes(current.run.status)) {
+    if (current.run.protocol_version_id === null) {
+      return <Card><div className={styles.notReady}><ListChecks aria-hidden="true" size={22} /><div><h2>Protocol required</h2><p>Assign an exact published Protocol Version before starting this Experiment in Phase 1.</p></div></div></Card>;
+    }
     return <Card className={styles.startCard}><div><span className={styles.eyebrow}>Execution</span><h2>Ready to begin?</h2><p>Starting records the actual UTC start time and creates stable step snapshots. Planned time remains unchanged.</p></div><Button className={styles.largeAction} disabled={working} onClick={() => void mutate(() => startRunExecution(run.id, current.run.revision), "Experiment started") }><CirclePlay aria-hidden="true" size={21} />{working ? "Starting…" : "Start Experiment"}</Button></Card>;
   }
 
@@ -70,19 +74,19 @@ export function ExecutionPanel({ run, onRunChanged }: { run: ExperimentRun; onRu
   const completedCount = current.steps.filter((step) => step.status === "completed").length;
   const progress = current.steps.length ? Math.round((completedCount / current.steps.length) * 100) : 0;
   const paused = current.run.status === "paused";
-  const completed = current.run.status === "completed";
+  const completionBadge = current.run.status === "archived" ? "Archived · Completed" : "Completed";
 
   return <section aria-labelledby="execution-heading" className={styles.execution}>
-    <Card className={styles.executionHeader}><div><span className={styles.eyebrow}>{completed ? "Completed record" : "Live execution"}</span><h2 id="execution-heading">{completed ? "Experiment completed" : paused ? "Experiment paused" : "Experiment in progress"}</h2><p>{completedCount} of {current.steps.length} steps completed{completed && current.run.completed_at ? ` · Completed ${formatDate(current.run.completed_at)}` : ""}</p></div><div className={styles.runControls}><Badge tone={completed ? "neutral" : paused ? "warning" : "success"}>{completed ? "Completed" : paused ? "Paused" : "Running"}</Badge>{completed ? null : paused ? <Button disabled={working} onClick={() => void mutate(() => resumeRunExecution(run.id, current.run.revision), "Experiment resumed")}><RotateCcw aria-hidden="true" size={18} />Resume</Button> : <Button disabled={working} variant="secondary" onClick={() => void mutate(() => pauseRunExecution(run.id, current.run.revision), "Experiment paused")}><CirclePause aria-hidden="true" size={18} />Pause</Button>}{completed ? null : <Button disabled={working} onClick={() => setCompletionOpen(true)}><Flag aria-hidden="true" size={18} />Complete Experiment</Button>}</div><div aria-label={`${progress}% complete`} className={styles.progressTrack} role="progressbar" aria-valuemax={100} aria-valuemin={0} aria-valuenow={progress}><span style={{ width: `${progress}%` }} /></div></Card>
+    <Card className={styles.executionHeader}><div><span className={styles.eyebrow}>{completed ? "Completed record" : "Live execution"}</span><h2 id="execution-heading">{completed ? "Experiment completed" : paused ? "Experiment paused" : "Experiment in progress"}</h2><p>{completedCount} of {current.steps.length} steps completed{completed && current.run.completed_at ? ` · Completed ${formatDate(current.run.completed_at)}` : ""}</p></div><div className={styles.runControls}><Badge tone={completed ? "neutral" : paused ? "warning" : "success"}>{completed ? completionBadge : paused ? "Paused" : "Running"}</Badge>{completed ? null : paused ? <Button disabled={working} onClick={() => void mutate(() => resumeRunExecution(run.id, current.run.revision), "Experiment resumed")}><RotateCcw aria-hidden="true" size={18} />Resume</Button> : <Button disabled={working} variant="secondary" onClick={() => void mutate(() => pauseRunExecution(run.id, current.run.revision), "Experiment paused")}><CirclePause aria-hidden="true" size={18} />Pause</Button>}{completed ? null : <Button disabled={working} onClick={() => setCompletionOpen(true)}><Flag aria-hidden="true" size={18} />Complete Experiment</Button>}</div><div aria-label={`${progress}% complete`} className={styles.progressTrack} role="progressbar" aria-valuemax={100} aria-valuemin={0} aria-valuenow={progress}><span style={{ width: `${progress}%` }} /></div></Card>
     {error ? <p className={styles.requestError} role="alert">{error}</p> : null}
     {feedback ? <p className={styles.feedback} role="status">{feedback}</p> : null}
     {completed && current.run.completion_note ? <Card className={styles.completionNote}><strong>Completion note</strong><p>{current.run.completion_note}</p></Card> : null}
-    {selected ? <CurrentStep step={selected} paused={paused} readOnly={completed} working={working} canStart={selected.id === nextPending?.id && !active} onStart={() => void mutate(() => startRunStep(selected.id, current.run.revision, selected.revision), "Step started")} onComplete={() => void mutate(() => completeRunStep(selected.id, current.run.revision, selected.revision), "Step completed")} /> : <Card><div className={styles.notReady}><ListChecks aria-hidden="true" size={22} /><div><h2>No Protocol steps</h2><p>{completed ? "This completed Experiment has no Protocol step history." : "This generic Experiment has started without a Protocol. Step execution is unavailable."}</p></div></div></Card>}
+    {selected ? <CurrentStep step={selected} paused={paused} readOnly={completed} working={working} canStart={selected.id === nextPending?.id && !active} onStart={() => void mutate(() => startRunStep(selected.id, current.run.revision, selected.revision), "Step started")} onComplete={() => void mutate(() => completeRunStep(selected.id, current.run.revision, selected.revision), "Step completed")} /> : <Card><div className={styles.notReady}><ListChecks aria-hidden="true" size={22} /><div><h2>No Protocol steps</h2><p>{completed ? "This completed Experiment has no Protocol step history." : "No Protocol steps were materialized for this Experiment."}</p></div></div></Card>}
     {selected ? <div className={styles.stepNavigation}><Button disabled={selectedIndex <= 0} variant="secondary" onClick={() => setSelectedId(current.steps[selectedIndex - 1]?.id ?? null)}><ArrowLeft aria-hidden="true" size={18} />Previous</Button><span>Step {selectedIndex + 1} of {current.steps.length}</span><Button disabled={selectedIndex >= current.steps.length - 1} variant="secondary" onClick={() => setSelectedId(current.steps[selectedIndex + 1]?.id ?? null)}>Next<ArrowRight aria-hidden="true" size={18} /></Button></div> : null}
     {current.steps.length ? <Card><CardHeader><CardTitle>All steps</CardTitle></CardHeader><CardContent><ol className={styles.allSteps}>{current.steps.map((step) => <li key={step.id}><button aria-current={selected?.id === step.id ? "step" : undefined} type="button" onClick={() => setSelectedId(step.id)}><span>{step.position}</span><span><strong>{step.title_snapshot}</strong><small>{step.status}</small></span>{step.status === "completed" ? <Check aria-hidden="true" size={18} /> : null}</button></li>)}</ol></CardContent></Card> : null}
-    <EvidencePanel runId={run.id} runStepId={selected?.id ?? null} />
+    <EvidencePanel readOnly={completed} runId={run.id} runStepId={selected?.id ?? null} />
     {completed ? <AmendmentPanel execution={current} onExecutionChanged={(updated) => { setExecution(updated); onRunChanged(updated.run); }} /> : null}
-    <CompletionDialog execution={current} open={completionOpen} onOpenChange={setCompletionOpen} onCompleted={(updated) => { setExecution(updated); onRunChanged(updated.run); setFeedback("Experiment completed explicitly"); }} />
+    {completed ? null : <CompletionDialog execution={current} open={completionOpen} onOpenChange={setCompletionOpen} onCompleted={(updated) => { setExecution(updated); onRunChanged(updated.run); setFeedback("Experiment completed explicitly"); }} />}
   </section>;
 }
 

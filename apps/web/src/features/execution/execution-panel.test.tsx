@@ -24,7 +24,7 @@ const amendmentMocks = vi.hoisted(() => ({
 vi.mock("./api", () => mocks);
 vi.mock("@/features/amendments/api", () => amendmentMocks);
 vi.mock("@/features/evidence/evidence-panel", () => ({
-  EvidencePanel: () => <div>Evidence panel</div>,
+  EvidencePanel: ({ readOnly }: { readOnly?: boolean }) => <div>Evidence panel{readOnly ? " read-only" : ""}</div>,
 }));
 
 const run: ExperimentRun = {
@@ -93,6 +93,28 @@ describe("ExecutionPanel", () => {
     expect(await screen.findByRole("heading", { name: "Experiment in progress" })).toBeInTheDocument();
   });
 
+  it("requires a published Protocol Version before offering Start", async () => {
+    const protocolFree = { ...run, protocol_version_id: null, status: "planned" as const };
+    mocks.getRunExecution.mockResolvedValue({ run: protocolFree, steps: [] });
+    render(<ExecutionPanel run={protocolFree} onRunChanged={vi.fn()} />);
+    expect(await screen.findByRole("heading", { name: "Protocol required" })).toBeInTheDocument();
+    expect(screen.getByText("Assign an exact published Protocol Version before starting this Experiment in Phase 1.")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Start Experiment" })).not.toBeInTheDocument();
+    expect(mocks.startRunExecution).not.toHaveBeenCalled();
+  });
+
+  it("offers Start after a published Protocol Version is assigned", async () => {
+    const protocolFree = { ...run, protocol_version_id: null, status: "planned" as const };
+    const assigned = { ...protocolFree, protocol_version_id: run.protocol_version_id, revision: 2 };
+    mocks.getRunExecution.mockResolvedValueOnce({ run: protocolFree, steps: [] });
+    const view = render(<ExecutionPanel run={protocolFree} onRunChanged={vi.fn()} />);
+    expect(await screen.findByRole("heading", { name: "Protocol required" })).toBeInTheDocument();
+
+    mocks.getRunExecution.mockResolvedValue({ run: assigned, steps: [] });
+    view.rerender(<ExecutionPanel run={assigned} onRunChanged={vi.fn()} />);
+    expect(await screen.findByRole("button", { name: "Start Experiment" })).toBeInTheDocument();
+  });
+
   it("reconstructs an active countdown from its persisted start timestamp without auto-completing", async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     vi.setSystemTime(new Date("2026-08-19T09:00:30Z"));
@@ -136,9 +158,9 @@ describe("ExecutionPanel", () => {
     expect(onRunChanged).toHaveBeenCalledWith(completed.run);
   });
 
-  it("shows a completed Experiment as read-only while keeping its evidence and amendment history visible", async () => {
+  it("keeps an archived completed Experiment read-only with evidence and amendment history visible", async () => {
     const completed: RunExecution = {
-      run: { ...run, status: "completed", actual_start_at: "2026-08-19T09:00:00Z", actual_end_at: "2026-08-19T10:00:00Z", completed_at: "2026-08-19T10:00:00Z", revision: 4 },
+      run: { ...run, status: "archived", actual_start_at: "2026-08-19T09:00:00Z", actual_end_at: "2026-08-19T10:00:00Z", completed_at: "2026-08-19T10:00:00Z", revision: 5 },
       steps: [{ ...step, status: "completed", actual_start_at: "2026-08-19T09:00:00Z", actual_end_at: "2026-08-19T09:01:00Z", completed_at: "2026-08-19T09:01:00Z", revision: 3 }],
     };
     mocks.getRunExecution.mockResolvedValue(completed);
@@ -146,7 +168,8 @@ describe("ExecutionPanel", () => {
     expect(await screen.findByRole("heading", { name: "Experiment completed" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Start Step" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Complete Step" })).not.toBeInTheDocument();
-    expect(screen.getByText("Evidence panel")).toBeInTheDocument();
+    expect(screen.getByText("Archived · Completed")).toBeInTheDocument();
+    expect(screen.getByText("Evidence panel read-only")).toBeInTheDocument();
     expect(await screen.findByRole("heading", { name: "Corrections and amendments" })).toBeInTheDocument();
   });
 });

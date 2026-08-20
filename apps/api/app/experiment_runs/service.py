@@ -9,6 +9,7 @@ from app.evidence.domain import ActivityType
 from app.experiment_runs.domain import (
     ExperimentRunLifecycleError,
     ExperimentRunStatus,
+    is_completed_record,
     validate_run_transition,
     validate_time_range,
 )
@@ -113,7 +114,7 @@ class ExperimentRunService:
     def update(self, run_id: UUID, payload: ExperimentRunUpdate) -> ExperimentRun:
         current = self.get(run_id)
         self._require_revision(current, payload.expected_revision)
-        if ExperimentRunStatus(current.status) is ExperimentRunStatus.COMPLETED:
+        if is_completed_record(current.completed_at):
             raise CompletedRecordProtectedError
         values = payload.model_dump(exclude={"expected_revision"}, exclude_unset=True)
         if (

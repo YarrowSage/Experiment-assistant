@@ -82,6 +82,56 @@ def test_start_materializes_stable_ordered_execution_records(client: TestClient)
     assert reloaded.json()["steps"] == execution["steps"]
 
 
+def test_protocol_free_planning_requires_published_version_before_start(
+    client: TestClient,
+) -> None:
+    existing_run, published = prepare_execution(client)
+    planned_response = client.post(
+        "/api/v1/experiment-runs",
+        json={
+            "project_id": existing_run["project_id"],
+            "protocol_version_id": None,
+            "title": "Protocol-free Planning Run",
+            "status": "planned",
+        },
+    )
+    assert planned_response.status_code == 201, planned_response.text
+    planned = planned_response.json()
+    assert planned["protocol_version_id"] is None
+
+    rejected = client.post(
+        f"/api/v1/experiment-runs/{planned['id']}/execution/start",
+        json={"expected_run_revision": planned["revision"]},
+    )
+    assert rejected.status_code == 409
+    assert rejected.json()["detail"]["code"] == "execution_state_conflict"
+    assert "published Protocol Version" in rejected.json()["detail"]["message"]
+    assert "Assign a Protocol" in rejected.json()["detail"]["message"]
+
+    assigned_response = client.patch(
+        f"/api/v1/experiment-runs/{planned['id']}",
+        json={
+            "expected_revision": planned["revision"],
+            "protocol_version_id": published["id"],
+        },
+    )
+    assert assigned_response.status_code == 200, assigned_response.text
+    assigned = assigned_response.json()
+    assert assigned["protocol_version_id"] == published["id"]
+
+    started_response = client.post(
+        f"/api/v1/experiment-runs/{planned['id']}/execution/start",
+        json={"expected_run_revision": assigned["revision"]},
+    )
+    assert started_response.status_code == 200, started_response.text
+    started = started_response.json()
+    assert started["run"]["status"] == "in_progress"
+    assert [step["source_protocol_version_id"] for step in started["steps"]] == [
+        published["id"],
+        published["id"],
+    ]
+
+
 def test_step_timer_uses_persisted_anchors_and_never_completes_run(client: TestClient) -> None:
     run, _ = prepare_execution(client)
     execution = client.post(

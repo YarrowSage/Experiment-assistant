@@ -110,7 +110,7 @@ def test_incomplete_required_step_needs_explicit_acknowledgement(client: TestCli
     assert confirmed.json()["run"]["status"] == "completed"
 
 
-def test_completed_normal_edit_is_blocked_and_amendment_preserves_history(
+def test_archived_completed_record_stays_protected_and_amendable(
     client: TestClient,
 ) -> None:
     execution = prepare_completable_run(client)
@@ -127,9 +127,19 @@ def test_completed_normal_edit_is_blocked_and_amendment_preserves_history(
             "acknowledge_incomplete_required_steps": True,
         },
     ).json()["run"]
+    completed_at = completed["completed_at"]
+    archived_response = client.post(
+        f"/api/v1/experiment-runs/{run['id']}/archive",
+        json={"expected_revision": completed["revision"]},
+    )
+    assert archived_response.status_code == 200, archived_response.text
+    archived = archived_response.json()
+    assert archived["status"] == "archived"
+    assert archived["completed_at"] == completed_at
+
     normal_edit = client.patch(
         f"/api/v1/experiment-runs/{run['id']}",
-        json={"expected_revision": completed["revision"], "title": "Silent overwrite"},
+        json={"expected_revision": archived["revision"], "title": "Silent overwrite"},
     )
     assert normal_edit.status_code == 409
     assert normal_edit.json()["detail"]["code"] == "completed_record_protected"
@@ -142,6 +152,25 @@ def test_completed_normal_edit_is_blocked_and_amendment_preserves_history(
     )
     assert note_edit.status_code == 409
     assert note_edit.json()["detail"]["code"] == "completed_record_protected"
+    note_create = client.post(
+        f"/api/v1/experiment-runs/{run['id']}/notes",
+        json={"content": "Late ordinary observation"},
+    )
+    assert note_create.status_code == 409
+    assert note_create.json()["detail"]["code"] == "completed_record_protected"
+    attachment_upload = client.post(
+        f"/api/v1/experiment-runs/{run['id']}/attachments?filename=late-result.txt",
+        content=b"late result",
+        headers={"content-type": "text/plain"},
+    )
+    assert attachment_upload.status_code == 409
+    assert attachment_upload.json()["detail"]["code"] == "completed_record_protected"
+    execution_action = client.post(
+        f"/api/v1/experiment-runs/{run['id']}/execution/resume",
+        json={"expected_run_revision": archived["revision"]},
+    )
+    assert execution_action.status_code == 409
+    assert execution_action.json()["detail"]["code"] == "execution_state_conflict"
 
     amendment_response = client.post(
         f"/api/v1/experiment-runs/{run['id']}/amendments",
@@ -151,7 +180,7 @@ def test_completed_normal_edit_is_blocked_and_amendment_preserves_history(
             "target_field": "title",
             "corrected_value": "Corrected Completion Run",
             "reason": "Data entry error in the run name",
-            "expected_target_revision": completed["revision"],
+            "expected_target_revision": archived["revision"],
         },
     )
     assert amendment_response.status_code == 201, amendment_response.text
@@ -160,9 +189,11 @@ def test_completed_normal_edit_is_blocked_and_amendment_preserves_history(
     assert amendment["original_value"] == "Completion Run"
     assert amendment["corrected_value"] == "Corrected Completion Run"
     assert amendment["reason"] == "Data entry error in the run name"
-    assert amendment["prior_revision"] == completed["revision"]
-    assert amendment["resulting_revision"] == completed["revision"] + 1
+    assert amendment["prior_revision"] == archived["revision"]
+    assert amendment["resulting_revision"] == archived["revision"] + 1
     assert result["execution"]["run"]["title"] == "Corrected Completion Run"
+    assert result["execution"]["run"]["status"] == "archived"
+    assert result["execution"]["run"]["completed_at"] == completed_at
     assert result["activity"]["event_type"] == "AMENDMENT_CREATED"
 
     step_amendment_response = client.post(
@@ -187,6 +218,11 @@ def test_completed_normal_edit_is_blocked_and_amendment_preserves_history(
     assert history.status_code == 200
     assert len(history.json()) == 2
     assert history.json()[0]["original_value"] is None
-    assert history.json()[1]["original_value"] == "Completion Run"
+    run_history = history.json()[1]
+    assert run_history["original_value"] == "Completion Run"
+    assert run_history["corrected_value"] == "Corrected Completion Run"
+    assert run_history["reason"] == "Data entry error in the run name"
     persisted = client.get(f"/api/v1/experiment-runs/{run['id']}").json()
     assert persisted["title"] == "Corrected Completion Run"
+    assert persisted["status"] == "archived"
+    assert persisted["completed_at"] == completed_at

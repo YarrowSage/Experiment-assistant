@@ -18,6 +18,7 @@ from app.experiment_runs.domain import ExperimentRunStatus
 from app.experiment_runs.errors import ExperimentRunNotFoundError
 from app.experiment_runs.models import ExperimentRun
 from app.experiment_runs.repository import ExperimentRunRepository
+from app.protocols.domain import ProtocolVersionStatus
 from app.protocols.errors import ProtocolVersionNotFoundError
 from app.protocols.repository import ProtocolRepository
 from app.workspaces.domain import DEFAULT_WORKSPACE_ID, utc_now
@@ -49,11 +50,21 @@ class ExecutionService:
         if run.actual_start_at is not None or run.run_steps:
             raise ExecutionStateConflictError("This Experiment execution has already started.")
 
-        source_version = None
-        if run.protocol_version_id is not None:
-            source_version = self.protocols.get_version(self.workspace_id, run.protocol_version_id)
-            if source_version is None:
-                raise ProtocolVersionNotFoundError(run.protocol_version_id)
+        if run.protocol_version_id is None:
+            raise ExecutionStateConflictError(
+                "Phase 1 execution requires an exact published Protocol Version. "
+                "Assign a Protocol before starting this Experiment."
+            )
+        source_version = self.protocols.get_version(self.workspace_id, run.protocol_version_id)
+        if source_version is None:
+            raise ProtocolVersionNotFoundError(run.protocol_version_id)
+        if ProtocolVersionStatus(source_version.status) not in {
+            ProtocolVersionStatus.PUBLISHED,
+            ProtocolVersionStatus.SUPERSEDED,
+        }:
+            raise ExecutionStateConflictError(
+                "Phase 1 execution requires an exact published Protocol Version."
+            )
 
         now = utc_now()
         updated = self.runs.compare_and_swap(
@@ -70,38 +81,37 @@ class ExecutionService:
             self.session.rollback()
             raise ExecutionRevisionConflictError
 
-        if source_version is not None:
-            for source_step in source_version.steps:
-                snapshot = RunStepRecord(
-                    experiment_run_id=run.id,
-                    source_protocol_version_id=source_version.id,
-                    source_protocol_step_id=source_step.id,
-                    source_stable_key=source_step.stable_key,
-                    position=source_step.position,
-                    title_snapshot=source_step.title,
-                    instruction_snapshot=source_step.instruction,
-                    planned_duration_seconds_snapshot=source_step.planned_duration_seconds,
-                    timer_mode_snapshot=source_step.timer_mode,
-                    required_snapshot=source_step.required,
-                    precautions_snapshot=source_step.precautions,
-                    status=RunStepStatus.PENDING.value,
-                    actual_start_at=None,
-                    actual_end_at=None,
-                    completed_at=None,
-                    created_at=now,
-                    updated_at=now,
-                    revision=1,
-                )
-                for source_substep in source_step.substeps:
-                    snapshot.substeps.append(
-                        RunSubStepRecord(
-                            source_protocol_substep_id=source_substep.id,
-                            position=source_substep.position,
-                            title_snapshot=source_substep.title,
-                            instruction_snapshot=source_substep.instruction,
-                        )
+        for source_step in source_version.steps:
+            snapshot = RunStepRecord(
+                experiment_run_id=run.id,
+                source_protocol_version_id=source_version.id,
+                source_protocol_step_id=source_step.id,
+                source_stable_key=source_step.stable_key,
+                position=source_step.position,
+                title_snapshot=source_step.title,
+                instruction_snapshot=source_step.instruction,
+                planned_duration_seconds_snapshot=source_step.planned_duration_seconds,
+                timer_mode_snapshot=source_step.timer_mode,
+                required_snapshot=source_step.required,
+                precautions_snapshot=source_step.precautions,
+                status=RunStepStatus.PENDING.value,
+                actual_start_at=None,
+                actual_end_at=None,
+                completed_at=None,
+                created_at=now,
+                updated_at=now,
+                revision=1,
+            )
+            for source_substep in source_step.substeps:
+                snapshot.substeps.append(
+                    RunSubStepRecord(
+                        source_protocol_substep_id=source_substep.id,
+                        position=source_substep.position,
+                        title_snapshot=source_substep.title,
+                        instruction_snapshot=source_substep.instruction,
                     )
-                self.session.add(snapshot)
+                )
+            self.session.add(snapshot)
         self.activity.record(
             ActivityType.RUN_STARTED,
             "Experiment execution started.",

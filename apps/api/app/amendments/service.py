@@ -23,7 +23,11 @@ from app.evidence.models import ActivityEvent
 from app.execution.domain import RunStepStatus
 from app.execution.errors import RunStepNotFoundError
 from app.execution.repository import ExecutionRepository
-from app.experiment_runs.domain import ExperimentRunStatus, validate_time_range
+from app.experiment_runs.domain import (
+    ExperimentRunStatus,
+    is_completed_record,
+    validate_time_range,
+)
 from app.experiment_runs.errors import ExperimentRunNotFoundError
 from app.experiment_runs.models import ExperimentRun
 from app.experiment_runs.repository import ExperimentRunRepository
@@ -101,7 +105,7 @@ class AmendmentService:
         self, run_id: UUID, payload: AmendmentCreate
     ) -> tuple[Amendment, ExperimentRun, ActivityEvent]:
         run = self.get_execution(run_id)
-        if ExperimentRunStatus(run.status) is not ExperimentRunStatus.COMPLETED:
+        if not is_completed_record(run.completed_at):
             raise CompletionStateConflictError(
                 "Amendments are reserved for completed scientific records."
             )

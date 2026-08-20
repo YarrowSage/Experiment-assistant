@@ -31,6 +31,7 @@ from app.evidence.schemas import (
 )
 from app.evidence.storage import FileStorage, FileStorageError, FileTooLargeError
 from app.execution.repository import ExecutionRepository
+from app.experiment_runs.domain import is_completed_record
 from app.experiment_runs.models import ExperimentRun
 from app.experiment_runs.repository import ExperimentRunRepository
 from app.workspaces.domain import DEFAULT_WORKSPACE_ID, utc_now
@@ -57,6 +58,7 @@ class EvidenceService:
 
     def create_note(self, run_id: UUID, payload: NoteCreate) -> Note:
         run = self._require_context(run_id, payload.run_step_record_id)
+        self._require_mutable_record(run)
         now = utc_now()
         note = Note(
             experiment_run_id=run.id,
@@ -88,8 +90,7 @@ class EvidenceService:
         run = self.runs.get(self.workspace_id, current.experiment_run_id)
         if run is None:
             raise EvidenceContextNotFoundError
-        if run.status == "completed":
-            raise CompletedRecordProtectedError
+        self._require_mutable_record(run)
         updated = self.repository.compare_and_swap_note(
             self.workspace_id, note_id, payload.expected_revision, payload.content or ""
         )
@@ -115,6 +116,7 @@ class EvidenceService:
         chunks: AsyncIterable[bytes],
     ) -> tuple[FileAttachment, UUID | None]:
         run = self._require_context(run_id, metadata.run_step_record_id)
+        self._require_mutable_record(run)
         attachment_id = uuid4()
         storage_key = f"attachments/{attachment_id.hex}/{uuid4().hex}"
         try:
@@ -246,3 +248,8 @@ class EvidenceService:
             if step is None or step.experiment_run_id != run.id:
                 raise EvidenceContextNotFoundError
         return run
+
+    @staticmethod
+    def _require_mutable_record(run: ExperimentRun) -> None:
+        if is_completed_record(run.completed_at):
+            raise CompletedRecordProtectedError

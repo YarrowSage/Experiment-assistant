@@ -1,5 +1,6 @@
 .execution { display: grid; gap: var(--space-5); }
 .executionHeader, .startCard { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: var(--space-4); }
+.executionHeader > *, .startCard > * { min-width: 0; }
 .executionHeader h2, .startCard h2, .notReady h2 { margin: var(--space-1) 0 0; font-size: var(--font-size-xl); }
 .executionHeader p, .startCard p, .notReady p { margin: var(--space-2) 0 0; color: var(--color-text-secondary); }
 .eyebrow { color: var(--color-text-tertiary); font-size: var(--font-size-xs); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
@@ -37,4 +38,4 @@
 .allSteps button > span:nth-child(2) { display: grid; gap: 2px; }
 .allSteps small { color: var(--color-text-tertiary); text-transform: capitalize; }
 .notReady { display: flex; align-items: flex-start; gap: var(--space-4); }
-@media (max-width: 47.99rem) { .executionHeader, .startCard { grid-template-columns: 1fr; } .runControls { justify-content: space-between; } .largeAction { width: 100%; min-height: 58px; } .stepNavigation button { min-width: 44px; } .stepNavigation button { font-size: 0; } .stepNavigation svg { width: 20px; height: 20px; } .instruction { font-size: var(--font-size-base); } }
+@media (max-width: 47.99rem) { .executionHeader, .startCard { grid-template-columns: 1fr; } .runControls { flex-wrap: wrap; justify-content: flex-start; } .runControls > button { flex: 1 1 auto; } .largeAction { width: 100%; min-height: 58px; } .stepNavigation button { min-width: 44px; } .stepNavigation button { font-size: 0; } .stepNavigation svg { width: 20px; height: 20px; } .instruction { font-size: var(--font-size-base); } }

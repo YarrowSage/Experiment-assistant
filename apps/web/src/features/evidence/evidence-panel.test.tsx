@@ -43,4 +43,29 @@ describe("EvidencePanel", () => {
     await waitFor(() => expect(mocks.uploadAttachment).toHaveBeenCalledWith(runId, file, stepId, ""));
     expect(await screen.findByText("results.csv uploaded and verified.")).toBeInTheDocument();
   });
+
+  it("keeps completed evidence readable without ordinary write controls", async () => {
+    mocks.getEvidence.mockResolvedValue({
+      notes: [{
+        id: "note-1",
+        experiment_run_id: runId,
+        run_step_record_id: null,
+        content: "Observation before completion",
+        created_at: "2026-08-19T09:00:00Z",
+        updated_at: "2026-08-19T09:00:00Z",
+        revision: 1,
+      }],
+      attachments: [],
+      activity: [],
+    });
+    const user = userEvent.setup();
+    render(<EvidencePanel readOnly runId={runId} runStepId={null} />);
+    expect(await screen.findByText("Observation before completion")).toBeInTheDocument();
+    expect(screen.getByText(/completed scientific record is read-only/i)).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Add Note" })).not.toBeInTheDocument();
+    await user.click(screen.getByRole("tab", { name: "Attachments" }));
+    expect(screen.queryByRole("button", { name: "Upload File" })).not.toBeInTheDocument();
+    expect(mocks.createNote).not.toHaveBeenCalled();
+    expect(mocks.uploadAttachment).not.toHaveBeenCalled();
+  });
 });

@@ -20,6 +20,12 @@ class ExperimentRunLifecycleError(ValueError):
     pass
 
 
+def is_completed_record(completed_at: datetime | None) -> bool:
+    """Return whether an Experiment has ever been explicitly completed."""
+
+    return completed_at is not None
+
+
 CREATABLE_RUN_STATUSES = frozenset(
     {
         ExperimentRunStatus.DRAFT,
