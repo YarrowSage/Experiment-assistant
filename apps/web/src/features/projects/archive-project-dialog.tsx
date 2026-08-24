@@ -3,6 +3,8 @@
 import { useState } from "react";
 
 import { Button, Dialog } from "@/components/ui";
+import { useLocalization } from "@/locales/localization-provider";
+import { presentError } from "@/locales";
 
 import { archiveProject, ProjectApiError } from "./api";
 import styles from "./projects.module.css";
@@ -19,6 +21,7 @@ export function ArchiveProjectDialog({
   open: boolean;
   project: Project | null;
 }) {
+  const { t } = useLocalization();
   const [submitting, setSubmitting] = useState(false);
   const [requestError, setRequestError] = useState<string | null>(null);
 
@@ -33,12 +36,10 @@ export function ArchiveProjectDialog({
     } catch (error) {
       if (error instanceof ProjectApiError && error.status === 409) {
         setRequestError(
-          "This project changed after you opened it. Refresh before archiving it.",
+          t("projects.archiveConflict"),
         );
       } else {
-        setRequestError(
-          error instanceof Error ? error.message : "The project could not be archived.",
-        );
+        setRequestError(presentError(error, t, "projects.archiveError"));
       }
     } finally {
       setSubmitting(false);
@@ -47,24 +48,23 @@ export function ArchiveProjectDialog({
 
   return (
     <Dialog
-      description="Archive is a lifecycle change, not deletion."
+      description={t("projects.archiveDescription")}
       footer={
         <>
           <Button disabled={submitting} variant="secondary" onClick={() => onOpenChange(false)}>
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button disabled={submitting} variant="danger" onClick={handleArchive}>
-            {submitting ? "Archiving…" : "Archive project"}
+            {submitting ? t("projects.archiving") : t("projects.archiveAction")}
           </Button>
         </>
       }
       open={open && project !== null}
-      title="Archive project?"
+      title={t("projects.archiveTitle")}
       onOpenChange={onOpenChange}
     >
       <p className={styles.archiveCopy}>
-        <strong>{project?.title}</strong> will leave the current Projects list. The Project and its
-        history will not be deleted, and it remains available through the Archived filter.
+        {project ? t("projects.archiveBody", { title: project.title }) : null}
       </p>
       {requestError ? (
         <div className={styles.formError} role="alert">

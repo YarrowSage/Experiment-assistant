@@ -3,6 +3,8 @@
 import { useId, useState, type FormEvent } from "react";
 
 import { Button, Dialog, Field, Input, Select, Textarea } from "@/components/ui";
+import { presentError, type MessageKey } from "@/locales";
+import { useLocalization } from "@/locales/localization-provider";
 
 import { createProject, ProjectApiError, updateProject } from "./api";
 import styles from "./projects.module.css";
@@ -32,11 +34,11 @@ const emptyForm: FormState = {
   tags: "",
 };
 
-const statusLabels: Record<EditableStatus, string> = {
-  planning: "Planning",
-  active: "Active",
-  paused: "Paused",
-  completed: "Completed",
+const statusLabels: Record<EditableStatus, MessageKey> = {
+  planning: "status.planning",
+  active: "status.active",
+  paused: "status.paused",
+  completed: "status.completed",
 };
 
 const allowedStatuses: Record<EditableStatus, readonly EditableStatus[]> = {
@@ -96,6 +98,7 @@ export function ProjectFormDialog({
   open: boolean;
   project?: Project | null;
 }) {
+  const { t } = useLocalization();
   const formId = useId();
   const [form, setForm] = useState<FormState>(() => stateFromProject(project));
   const [errors, setErrors] = useState<FormErrors>({});
@@ -111,9 +114,9 @@ export function ProjectFormDialog({
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const nextErrors: FormErrors = {};
-    if (!form.title.trim()) nextErrors.title = "Project name is required.";
+    if (!form.title.trim()) nextErrors.title = t("projects.validation.nameRequired");
     if (form.startDate && form.endDate && form.endDate < form.startDate) {
-      nextErrors.endDate = "End date cannot be earlier than start date.";
+      nextErrors.endDate = t("projects.validation.dateOrder");
     }
     if (Object.keys(nextErrors).length) {
       setErrors(nextErrors);
@@ -131,12 +134,10 @@ export function ProjectFormDialog({
     } catch (error) {
       if (error instanceof ProjectApiError && error.status === 409) {
         setRequestError(
-          "This project changed after you opened it. Refresh the project before trying again.",
+          t("projects.conflict"),
         );
       } else {
-        setRequestError(
-          error instanceof Error ? error.message : "The project could not be saved.",
-        );
+        setRequestError(presentError(error, t, "projects.saveError"));
       }
     } finally {
       setSubmitting(false);
@@ -149,21 +150,27 @@ export function ProjectFormDialog({
     <Dialog
       description={
         editing
-          ? "Update the planning record. Changes use revision checks to prevent silent overwrites."
-          : "Create a real Project in the local Default Workspace."
+          ? t("projects.form.editDescription")
+          : t("projects.form.createDescription")
       }
       footer={
         <>
           <Button disabled={submitting} variant="secondary" onClick={() => onOpenChange(false)}>
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button disabled={submitting} form={formId} type="submit">
-            {submitting ? (editing ? "Saving changes…" : "Creating project…") : editing ? "Save changes" : "Create project"}
+            {submitting
+              ? editing
+                ? t("projects.form.saving")
+                : t("projects.form.creating")
+              : editing
+                ? t("common.saveChanges")
+                : t("projects.form.create")}
           </Button>
         </>
       }
       open={open}
-      title={editing ? "Edit project" : "New project"}
+      title={editing ? t("projects.form.editTitle") : t("projects.form.newTitle")}
       onOpenChange={onOpenChange}
     >
       <form className={styles.projectForm} id={formId} onSubmit={handleSubmit}>
@@ -172,7 +179,7 @@ export function ProjectFormDialog({
             {requestError}
           </div>
         ) : null}
-        <Field error={errors.title} label="Project name" required>
+        <Field error={errors.title} label={t("projects.form.name")} required>
           {(props) => (
             <Input
               {...props}
@@ -183,7 +190,7 @@ export function ProjectFormDialog({
             />
           )}
         </Field>
-        <Field label="Description">
+        <Field label={t("common.description")}>
           {(props) => (
             <Textarea
               {...props}
@@ -192,7 +199,7 @@ export function ProjectFormDialog({
             />
           )}
         </Field>
-        <Field label="Objective">
+        <Field label={t("common.objective")}>
           {(props) => (
             <Textarea
               {...props}
@@ -202,7 +209,7 @@ export function ProjectFormDialog({
           )}
         </Field>
         <div className={styles.formGrid}>
-          <Field label="Status">
+          <Field label={t("common.status")}>
             {(props) => (
               <Select
                 {...props}
@@ -211,23 +218,23 @@ export function ProjectFormDialog({
               >
                 {statuses.map((status) => (
                   <option key={status} value={status}>
-                    {statusLabels[status]}
+                    {t(statusLabels[status])}
                   </option>
                 ))}
               </Select>
             )}
           </Field>
-          <Field hint="Optional" label="Tags">
+          <Field hint={t("projects.form.tagsHint")} label={t("projects.tags")}>
             {(props) => (
               <Input
                 {...props}
-                placeholder="e.g. CCK-8, pilot"
+                placeholder={t("projects.form.tagsPlaceholder")}
                 value={form.tags}
                 onChange={(event) => updateField("tags", event.target.value)}
               />
             )}
           </Field>
-          <Field label="Start date">
+          <Field label={t("projects.form.startDate")}>
             {(props) => (
               <Input
                 {...props}
@@ -237,7 +244,7 @@ export function ProjectFormDialog({
               />
             )}
           </Field>
-          <Field error={errors.endDate} label="End date">
+          <Field error={errors.endDate} label={t("projects.form.endDate")}>
             {(props) => (
               <Input
                 {...props}

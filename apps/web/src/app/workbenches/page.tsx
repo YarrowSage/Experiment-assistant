@@ -1,4 +1,5 @@
-import type { Metadata } from "next";
+"use client";
+
 import { Activity, Grid3X3, Microscope, PawPrint, type LucideIcon } from "lucide-react";
 
 import {
@@ -10,44 +11,45 @@ import {
   PageHeader,
   StatusBadge,
 } from "@/components/ui";
+import type { MessageKey } from "@/locales";
+import { useLocalization } from "@/locales/localization-provider";
 
 import styles from "../pages.module.css";
 
-export const metadata: Metadata = { title: "Workbenches" };
-
-const workbenches: Array<{ description: string; icon: LucideIcon; title: string }> = [
+const workbenches: Array<{ description: MessageKey; icon: LucideIcon; title: MessageKey }> = [
   {
-    description: "Longitudinal subjects, measurements, and dose records in a future structured domain model.",
+    description: "workbenches.animalDescription",
     icon: PawPrint,
-    title: "Animal Workbench",
+    title: "workbenches.animal",
   },
   {
-    description: "Cell culture, passage, treatment, imaging, and measurement workflows.",
+    description: "workbenches.cellDescription",
     icon: Microscope,
-    title: "Cell Workbench",
+    title: "workbenches.cell",
   },
   {
-    description: "A specialized plate and well workspace for structured experimental layouts.",
+    description: "workbenches.plateDescription",
     icon: Grid3X3,
-    title: "Plate Workbench",
+    title: "workbenches.plate",
   },
   {
-    description: "A future workspace for chromatography runs, traces, fractions, and linked evidence.",
+    description: "workbenches.chromatographyDescription",
     icon: Activity,
-    title: "Chromatography Workbench",
+    title: "workbenches.chromatography",
   },
 ];
 
 export default function WorkbenchesPage() {
+  const { t } = useLocalization();
   return (
     <div className={styles.pageStack}>
       <PageHeader
-        breadcrumb={[{ href: "/", label: "Home" }, { label: "Workbenches" }]}
-        description="Specialized scientific workspaces share a consistent shell while keeping their own structured domain models."
-        eyebrow="Structured work"
-        title="Workbenches"
+        breadcrumb={[{ href: "/", label: t("navigation.home") }, { label: t("workbenches.title") }]}
+        description={t("workbenches.description")}
+        eyebrow={t("workbenches.eyebrow")}
+        title={t("workbenches.title")}
       />
-      <section aria-label="Planned workbenches" className={styles.overviewGrid}>
+      <section aria-label={t("accessibility.plannedWorkbenches")} className={styles.overviewGrid}>
         {workbenches.map((workbench) => {
           const Icon = workbench.icon;
           return (
@@ -58,15 +60,15 @@ export default function WorkbenchesPage() {
                     <Icon size={23} strokeWidth={1.8} />
                   </span>
                   <div>
-                    <CardTitle>{workbench.title}</CardTitle>
-                    <CardDescription>Domain placeholder</CardDescription>
+                    <CardTitle>{t(workbench.title)}</CardTitle>
+                    <CardDescription>{t("workbenches.placeholder")}</CardDescription>
                   </div>
                 </div>
                 <StatusBadge status="planned" />
               </CardHeader>
               <CardContent className={styles.workbenchBody}>
-                <p>{workbench.description}</p>
-                <p>No records, models, APIs, or business actions are included in Phase 1.</p>
+                <p>{t(workbench.description)}</p>
+                <p>{t("workbenches.phaseBoundary")}</p>
               </CardContent>
             </Card>
           );

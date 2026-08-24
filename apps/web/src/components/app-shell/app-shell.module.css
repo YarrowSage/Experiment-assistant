@@ -278,6 +278,41 @@
   font-weight: var(--font-weight-semibold);
 }
 
+.languagePicker {
+  display: grid;
+  gap: var(--space-2);
+  margin: var(--space-5) 0 0;
+  padding: var(--space-4);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-control);
+}
+
+.languagePicker legend {
+  padding: 0 var(--space-1);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.languagePicker p {
+  margin: 0 0 var(--space-2);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.languagePicker label {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-control);
+  cursor: pointer;
+}
+
+.languagePicker label:hover {
+  background: var(--color-surface-subtle);
+}
+
 .moreList {
   display: grid;
   gap: var(--space-2);

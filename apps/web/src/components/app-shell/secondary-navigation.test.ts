@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 
+import { translate } from "@/locales";
+
 import { resolveSecondaryNavigation } from "./secondary-navigation";
 
 function labelsFor(pathname: string) {
-  return resolveSecondaryNavigation(pathname)?.items.map((item) => item.label);
+  return resolveSecondaryNavigation(pathname)?.items.map((item) => translate("en-US", item.label));
 }
 
 describe("secondary navigation", () => {
@@ -12,7 +14,8 @@ describe("secondary navigation", () => {
     ["/analysis/general", "Analysis"],
     ["/resources/calculators", "Resources"],
   ])("resolves %s to the %s module navigation", (pathname, title) => {
-    expect(resolveSecondaryNavigation(pathname)?.title).toBe(title);
+    const key = resolveSecondaryNavigation(pathname)?.title;
+    expect(key ? translate("en-US", key) : undefined).toBe(title);
   });
 
   it("uses the frozen Analysis navigation labels", () => {
@@ -48,21 +51,21 @@ describe("secondary navigation", () => {
 
   it("keeps the Experiments shell limited to its accepted top-level areas", () => {
     const navigation = resolveSecondaryNavigation("/experiments/projects");
-    expect(navigation?.items.map((item) => item.label)).toEqual(["Projects", "All Experiments"]);
+    expect(navigation?.items.map((item) => translate("en-US", item.label))).toEqual(["Projects", "All Experiments"]);
     expect(navigation?.items[0]).toEqual({
       href: "/experiments/projects",
-      label: "Projects",
+      label: "navigation.projects",
     });
     expect(navigation?.items[1]).toEqual({
       href: "/experiments/runs",
-      label: "All Experiments",
+      label: "navigation.allExperiments",
     });
   });
 
   it("provides the frozen contextual navigation for a specific Project", () => {
     const navigation = resolveSecondaryNavigation("/experiments/projects/project-1");
-    expect(navigation?.title).toBe("Project");
-    expect(navigation?.items.map((item) => item.label)).toEqual([
+    expect(navigation?.title ? translate("en-US", navigation.title) : undefined).toBe("Project");
+    expect(navigation?.items.map((item) => translate("en-US", item.label))).toEqual([
       "Overview",
       "Experiments",
       "Protocols",
@@ -83,14 +86,14 @@ describe("secondary navigation", () => {
     const navigation = resolveSecondaryNavigation("/experiments/projects/project-1", [
       {
         matchPrefix: "/experiments",
-        navigation: { items: [{ label: "Projects" }], title: "Experiments" },
+        navigation: { items: [{ label: "navigation.projects" }], title: "navigation.experiments" },
       },
       {
         matchPrefix: "/experiments/projects",
-        navigation: { items: [{ label: "Overview" }], title: "Project" },
+        navigation: { items: [{ label: "navigation.overview" }], title: "common.project" },
       },
     ]);
 
-    expect(navigation?.title).toBe("Project");
+    expect(navigation?.title).toBe("common.project");
   });
 });

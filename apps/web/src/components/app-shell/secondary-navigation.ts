@@ -1,11 +1,13 @@
+import type { MessageKey } from "@/locales";
+
 export type SecondaryNavigationItem = {
   href?: string;
-  label: string;
+  label: MessageKey;
 };
 
 export type SecondaryNavigationConfig = {
   items: readonly SecondaryNavigationItem[];
-  title: string;
+  title: MessageKey;
 };
 
 export type SecondaryNavigationRule = {
@@ -36,54 +38,54 @@ export const secondaryNavigationRules: readonly SecondaryNavigationRule[] = [
     navigation: (pathname) => {
       const projectPath = pathname.split("/").slice(0, 4).join("/");
       return {
-        title: "Project",
+        title: "common.project",
         items: [
-          { href: projectPath, label: "Overview" },
-          { href: `${projectPath}/experiments`, label: "Experiments" },
-          { href: `${projectPath}/protocols`, label: "Protocols" },
-          { label: "Planner" },
-          { label: "Files" },
-          { label: "Analysis" },
+          { href: projectPath, label: "navigation.overview" },
+          { href: `${projectPath}/experiments`, label: "navigation.experiments" },
+          { href: `${projectPath}/protocols`, label: "common.protocols" },
+          { label: "navigation.planner" },
+          { label: "common.files" },
+          { label: "navigation.analysis" },
         ],
       };
     },
   },
   createModuleRule("/experiments", {
-    title: "Experiments",
+    title: "navigation.experiments",
     items: [
-      { href: "/experiments/projects", label: "Projects" },
-      { href: "/experiments/runs", label: "All Experiments" },
+      { href: "/experiments/projects", label: "navigation.projects" },
+      { href: "/experiments/runs", label: "navigation.allExperiments" },
     ],
   }),
   createModuleRule("/workbenches", {
-    title: "Workbenches",
+    title: "navigation.workbenches",
     items: [
-      { href: "/workbenches", label: "Overview" },
-      { label: "Animal" },
-      { label: "Cell" },
-      { label: "Plate" },
-      { label: "Chromatography" },
+      { href: "/workbenches", label: "navigation.overview" },
+      { label: "navigation.animal" },
+      { label: "navigation.cell" },
+      { label: "navigation.plate" },
+      { label: "navigation.chromatography" },
     ],
   }),
   createModuleRule("/analysis", {
-    title: "Analysis",
+    title: "navigation.analysis",
     items: [
-      { href: "/analysis", label: "Overview" },
-      { label: "General Analysis" },
-      { label: "Guided Analysis" },
-      { label: "Datasets" },
-      { label: "Saved Analyses" },
-      { label: "Recipes" },
+      { href: "/analysis", label: "navigation.overview" },
+      { label: "navigation.generalAnalysis" },
+      { label: "navigation.guidedAnalysis" },
+      { label: "navigation.datasets" },
+      { label: "navigation.savedAnalyses" },
+      { label: "navigation.recipes" },
     ],
   }),
   createModuleRule("/resources", {
-    title: "Resources",
+    title: "navigation.resources",
     items: [
-      { href: "/resources", label: "Overview" },
-      { label: "Calculators" },
-      { label: "Templates" },
-      { label: "Kits & Manuals" },
-      { label: "Favorites" },
+      { href: "/resources", label: "navigation.overview" },
+      { label: "navigation.calculators" },
+      { label: "navigation.templates" },
+      { label: "navigation.kitsManuals" },
+      { label: "navigation.favorites" },
     ],
   }),
 ];
