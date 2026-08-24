@@ -4,9 +4,11 @@ export function resolvePageTitleKey(pathname: string): MessageKey | undefined {
   if (pathname === "/") return undefined;
   if (pathname === "/planner") return "planner.title";
   if (pathname === "/analysis" || pathname.startsWith("/analysis/")) return "analysis.title";
-  if (pathname === "/workbenches" || pathname.startsWith("/workbenches/")) {
-    return "workbenches.title";
-  }
+  if (pathname === "/workbenches/animal") return "workbench.animal.title";
+  if (pathname === "/workbenches/cell") return "workbench.cell.title";
+  if (pathname === "/workbenches/plate") return "workbench.plate.title";
+  if (pathname === "/workbenches/chromatography") return "workbench.chromatography.title";
+  if (pathname === "/workbenches" || pathname.startsWith("/workbenches/")) return "workbenches.title";
   if (pathname === "/resources" || pathname.startsWith("/resources/")) return "resources.title";
   if (/^\/experiments\/projects\/[^/]+\/protocols\/[^/]+/.test(pathname)) {
     return "common.protocol";

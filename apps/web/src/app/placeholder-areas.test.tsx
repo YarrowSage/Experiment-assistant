@@ -5,14 +5,15 @@ import AnalysisPage from "./analysis/page";
 import ResourcesPage from "./resources/page";
 import WorkbenchesPage from "./workbenches/page";
 
-describe("Phase 1 placeholder product areas", () => {
-  it("keeps all four accepted Workbenches visibly Planned", () => {
+describe("planned product areas", () => {
+  it("keeps all four accepted Workbench foundations visibly Planned", () => {
     render(<WorkbenchesPage />);
     for (const label of ["Animal Workbench", "Cell Workbench", "Plate Workbench", "Chromatography Workbench"]) {
       expect(screen.getByRole("heading", { name: label })).toBeInTheDocument();
     }
     expect(screen.getAllByText("Planned")).toHaveLength(4);
-    expect(screen.getAllByText(/No records, models, APIs, or business actions are included in Phase 1/)).toHaveLength(4);
+    expect(screen.getAllByRole("link", { name: "Open workbench" })).toHaveLength(4);
+    expect(screen.queryByText(/No records, models, APIs, or business actions are included in Phase 1/)).not.toBeInTheDocument();
   });
 
   it("keeps Analysis an honest shell without statistics", () => {

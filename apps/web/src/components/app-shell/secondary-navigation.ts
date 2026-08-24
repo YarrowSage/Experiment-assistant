@@ -61,10 +61,10 @@ export const secondaryNavigationRules: readonly SecondaryNavigationRule[] = [
     title: "navigation.workbenches",
     items: [
       { href: "/workbenches", label: "navigation.overview" },
-      { label: "navigation.animal" },
-      { label: "navigation.cell" },
-      { label: "navigation.plate" },
-      { label: "navigation.chromatography" },
+      { href: "/workbenches/animal", label: "navigation.animal" },
+      { href: "/workbenches/cell", label: "navigation.cell" },
+      { href: "/workbenches/plate", label: "navigation.plate" },
+      { href: "/workbenches/chromatography", label: "navigation.chromatography" },
     ],
   }),
   createModuleRule("/analysis", {
