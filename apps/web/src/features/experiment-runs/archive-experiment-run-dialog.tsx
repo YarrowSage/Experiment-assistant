@@ -3,6 +3,8 @@
 import { useState } from "react";
 
 import { Button, Dialog } from "@/components/ui";
+import { useLocalization } from "@/locales/localization-provider";
+import { presentError } from "@/locales";
 
 import { archiveExperimentRun } from "./api";
 import styles from "./experiment-runs.module.css";
@@ -19,6 +21,7 @@ export function ArchiveExperimentRunDialog({
   open: boolean;
   run: ExperimentRun;
 }) {
+  const { t } = useLocalization();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   async function archive() {
@@ -28,27 +31,27 @@ export function ArchiveExperimentRunDialog({
       onArchived(await archiveExperimentRun(run.id, run.revision));
       onOpenChange(false);
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "The Experiment could not be archived.");
+      setError(presentError(cause, t, "experiments.archiveError"));
     } finally {
       setSubmitting(false);
     }
   }
   return (
     <Dialog
-      description="The scientific record will remain retrievable and will not be deleted."
+      description={t("experiments.archiveDescription")}
       footer={
         <>
-          <Button disabled={submitting} variant="secondary" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button disabled={submitting} variant="secondary" onClick={() => onOpenChange(false)}>{t("common.cancel")}</Button>
           <Button disabled={submitting} variant="danger" onClick={() => void archive()}>
-            {submitting ? "Archiving…" : "Archive Experiment"}
+            {submitting ? t("projects.archiving") : t("experiments.archiveAction")}
           </Button>
         </>
       }
       open={open}
-      title="Archive Experiment?"
+      title={t("experiments.archiveTitle")}
       onOpenChange={onOpenChange}
     >
-      <p>Archive <strong>{run.title}</strong>? It will move out of current views.</p>
+      <p>{t("experiments.archiveBody", { title: run.title })}</p>
       {error ? <p className={styles.requestError} role="alert">{error}</p> : null}
     </Dialog>
   );

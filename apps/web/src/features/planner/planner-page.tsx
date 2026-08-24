@@ -9,21 +9,24 @@ import { listExperimentRuns } from "@/features/experiment-runs/api";
 import { formatDateTime, ExperimentRunStatusBadge } from "@/features/experiment-runs/presenters";
 import type { ExperimentRun } from "@/features/experiment-runs/types";
 import { listProjects } from "@/features/projects/api";
+import { useLocalization } from "@/locales/localization-provider";
+import { presentError } from "@/locales";
 
 import styles from "./planner.module.css";
 
 type PlannerData = { today: ExperimentRun[]; upcoming: ExperimentRun[]; projectNames: Map<string, string> };
 
 export function PlannerPage() {
+  const { t } = useLocalization();
   const [data, setData] = useState<PlannerData>({ today: [], upcoming: [], projectNames: new Map() });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const load = useCallback(async () => {
     setLoading(true); setError(null);
     try { setData(await loadPlannerData()); }
-    catch (cause) { setError(cause instanceof Error ? cause.message : "Planner could not be loaded."); }
+    catch (cause) { setError(presentError(cause, t, "planner.loadError")); }
     finally { setLoading(false); }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     let ignore = false;
@@ -32,29 +35,30 @@ export function PlannerPage() {
         const loaded = await loadPlannerData();
         if (!ignore) { setData(loaded); setError(null); }
       } catch (cause) {
-        if (!ignore) setError(cause instanceof Error ? cause.message : "Planner could not be loaded.");
+        if (!ignore) setError(presentError(cause, t, "planner.loadError"));
       } finally { if (!ignore) setLoading(false); }
     }
     void loadPlanner();
     return () => { ignore = true; };
-  }, []);
+  }, [t]);
 
   const today = useMemo(() => relevantPlannedRuns(data.today), [data.today]);
   const upcoming = useMemo(() => relevantPlannedRuns(data.upcoming), [data.upcoming]);
 
   return <div className={styles.pageStack}>
-    <PageHeader breadcrumb={[{ href: "/", label: "Home" }, { label: "Planner" }]} description="Basic date-based visibility for real ExperimentRuns with planned start times." eyebrow="Planning" title="Planner" />
-    {loading ? <Card><LoadingState label="Loading planned Experiments" /></Card> : error ? <Card><ErrorState title="Planner could not be loaded" description={error} onRetry={() => void load()} /></Card> : <Tabs ariaLabel="Planner views" defaultValue="today" items={[
-      { value: "today", label: "Today", content: <RunSchedule emptyDescription="Experiments with a planned start in your local calendar day will appear here." emptyTitle="Nothing planned for today" projectNames={data.projectNames} runs={today} /> },
-      { value: "upcoming", label: "Upcoming", content: <RunSchedule emptyDescription="Future planned starts will appear here in chronological order." emptyTitle="No upcoming Experiments" projectNames={data.projectNames} runs={upcoming} /> },
+    <PageHeader breadcrumb={[{ href: "/", label: t("navigation.home") }, { label: t("planner.title") }]} description={t("planner.description")} eyebrow={t("planner.eyebrow")} title={t("planner.title")} />
+    {loading ? <Card><LoadingState label={t("planner.loading")} /></Card> : error ? <Card><ErrorState title={t("planner.loadError")} description={error} onRetry={() => void load()} /></Card> : <Tabs ariaLabel={t("accessibility.plannerViews")} defaultValue="today" items={[
+      { value: "today", label: t("planner.today"), content: <RunSchedule emptyDescription={t("planner.todayEmptyDescription")} emptyTitle={t("planner.todayEmpty")} projectNames={data.projectNames} runs={today} /> },
+      { value: "upcoming", label: t("planner.upcoming"), content: <RunSchedule emptyDescription={t("planner.upcomingEmptyDescription")} emptyTitle={t("planner.upcomingEmpty")} projectNames={data.projectNames} runs={upcoming} /> },
     ]} />}
-    <Card className={styles.boundaryCard}><Info aria-hidden="true" size={20} /><div><CardTitle>Phase 1 planning boundary</CardTitle><CardDescription>This view reads existing planned start times. Dependencies, automatic shifting, advanced rescheduling, and Week/Month planning are not implemented.</CardDescription></div></Card>
+    <Card className={styles.boundaryCard}><Info aria-hidden="true" size={20} /><div><CardTitle>{t("planner.boundaryTitle")}</CardTitle><CardDescription>{t("planner.boundaryDescription")}</CardDescription></div></Card>
   </div>;
 }
 
 function RunSchedule({ emptyDescription, emptyTitle, projectNames, runs }: { emptyDescription: string; emptyTitle: string; projectNames: Map<string, string>; runs: ExperimentRun[] }) {
+  const { locale, t } = useLocalization();
   if (!runs.length) return <Card><EmptyState icon={<CalendarDays size={22} />} title={emptyTitle} description={emptyDescription} /></Card>;
-  return <div className={styles.runList}>{runs.map((run) => <Card className={styles.runCard} key={run.id}><CardHeader><div><CardTitle>{run.title}</CardTitle><CardDescription>{projectNames.get(run.project_id) ?? "Project unavailable"}</CardDescription></div><ExperimentRunStatusBadge status={run.status} /></CardHeader><CardContent className={styles.runBody}><span><Timer aria-hidden="true" size={17} />{formatDateTime(run.planned_start_at)}</span><p>{run.purpose ?? run.description ?? "No purpose recorded."}</p><Link href={`/experiments/runs/${run.id}`}>Open Experiment</Link></CardContent></Card>)}</div>;
+  return <div className={styles.runList}>{runs.map((run) => <Card className={styles.runCard} key={run.id}><CardHeader><div><CardTitle>{run.title}</CardTitle><CardDescription>{projectNames.get(run.project_id) ?? t("common.projectUnavailable")}</CardDescription></div><ExperimentRunStatusBadge status={run.status} /></CardHeader><CardContent className={styles.runBody}><span><Timer aria-hidden="true" size={17} />{formatDateTime(run.planned_start_at, locale, t("common.notRecorded"))}</span><p>{run.purpose ?? run.description ?? t("common.noPurpose")}</p><Link href={`/experiments/runs/${run.id}`}>{t("experiments.open")}</Link></CardContent></Card>)}</div>;
 }
 
 async function loadPlannerData(): Promise<PlannerData> {

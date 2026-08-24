@@ -10,6 +10,7 @@ import {
 } from "react";
 
 import { classNames } from "@/lib/class-names";
+import { useLocalization } from "@/locales/localization-provider";
 
 import styles from "./ui.module.css";
 
@@ -32,6 +33,7 @@ export function Dialog({
   presentation = "modal",
   title,
 }: DialogProps) {
+  const { t } = useLocalization();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const priorFocusRef = useRef<HTMLElement | null>(null);
   const titleId = useId();
@@ -99,7 +101,7 @@ export function Dialog({
               ) : null}
             </div>
             <button
-              aria-label="Close dialog"
+              aria-label={t("accessibility.closeDialog")}
               className={styles.dialogClose}
               type="button"
               onClick={() => onOpenChange(false)}

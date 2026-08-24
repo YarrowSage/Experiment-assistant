@@ -1,3 +1,5 @@
+"use client";
+
 import {
   CircleAlert,
   CircleCheck,
@@ -8,6 +10,8 @@ import {
 import type { HTMLAttributes } from "react";
 
 import { classNames } from "@/lib/class-names";
+import type { MessageKey } from "@/locales";
+import { useLocalization } from "@/locales/localization-provider";
 
 import styles from "./ui.module.css";
 
@@ -31,22 +35,23 @@ export function Badge({
 
 type Status = "draft" | "planned" | "in-progress" | "completed" | "error";
 
-const statusDetails: Record<Status, { label: string; tone: BadgeTone; icon: LucideIcon }> = {
-  draft: { label: "Draft", tone: "neutral", icon: CircleDashed },
-  planned: { label: "Planned", tone: "accent", icon: Clock3 },
-  "in-progress": { label: "In progress", tone: "warning", icon: Clock3 },
-  completed: { label: "Completed", tone: "success", icon: CircleCheck },
-  error: { label: "Action required", tone: "danger", icon: CircleAlert },
+const statusDetails: Record<Status, { label: MessageKey; tone: BadgeTone; icon: LucideIcon }> = {
+  draft: { label: "status.draft", tone: "neutral", icon: CircleDashed },
+  planned: { label: "status.planned", tone: "accent", icon: Clock3 },
+  "in-progress": { label: "status.inProgress", tone: "warning", icon: Clock3 },
+  completed: { label: "status.completed", tone: "success", icon: CircleCheck },
+  error: { label: "status.actionRequired", tone: "danger", icon: CircleAlert },
 };
 
 export function StatusBadge({ status }: { status: Status }) {
+  const { t } = useLocalization();
   const detail = statusDetails[status];
   const Icon = detail.icon;
 
   return (
     <Badge tone={detail.tone}>
       <Icon aria-hidden="true" size={13} strokeWidth={2} />
-      {detail.label}
+      {t(detail.label)}
     </Badge>
   );
 }

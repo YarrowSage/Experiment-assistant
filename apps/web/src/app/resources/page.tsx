@@ -1,4 +1,5 @@
-import type { Metadata } from "next";
+"use client";
+
 import { Calculator, LayoutTemplate, LibraryBig, Star } from "lucide-react";
 
 import {
@@ -9,44 +10,45 @@ import {
   CardTitle,
   PageHeader,
 } from "@/components/ui";
+import type { MessageKey } from "@/locales";
+import { useLocalization } from "@/locales/localization-provider";
 
 import styles from "../pages.module.css";
 
-export const metadata: Metadata = { title: "Resources" };
-
-const resources = [
+const resources: Array<{ description: MessageKey; icon: typeof Calculator; title: MessageKey }> = [
   {
-    description: "Focused scientific calculators with explicit inputs, units, and methods.",
+    description: "resources.calculatorsDescription",
     icon: Calculator,
-    title: "Calculators",
+    title: "resources.calculators",
   },
   {
-    description: "Reusable record and workflow templates reserved for a later reviewed phase.",
+    description: "resources.templatesDescription",
     icon: LayoutTemplate,
-    title: "Templates",
+    title: "resources.templates",
   },
   {
-    description: "Kit identity, manufacturer details, manuals, and protocol relationships.",
+    description: "resources.kitsManualsDescription",
     icon: LibraryBig,
-    title: "Kits & Manuals",
+    title: "resources.kitsManuals",
   },
   {
-    description: "A future place to return quickly to deliberately saved resources.",
+    description: "resources.favoritesDescription",
     icon: Star,
-    title: "Favorites",
+    title: "resources.favorites",
   },
 ];
 
 export default function ResourcesPage() {
+  const { t } = useLocalization();
   return (
     <div className={styles.pageStack}>
       <PageHeader
-        breadcrumb={[{ href: "/", label: "Home" }, { label: "Resources" }]}
-        description="Planned reference tools and materials will stay connected to the research records that give them meaning."
-        eyebrow="Reference material"
-        title="Resources"
+        breadcrumb={[{ href: "/", label: t("navigation.home") }, { label: t("resources.title") }]}
+        description={t("resources.description")}
+        eyebrow={t("resources.eyebrow")}
+        title={t("resources.title")}
       />
-      <section aria-label="Planned resource areas" className={styles.resourceGrid}>
+      <section aria-label={t("accessibility.plannedResources")} className={styles.resourceGrid}>
         {resources.map((resource) => {
           const Icon = resource.icon;
           return (
@@ -57,13 +59,13 @@ export default function ResourcesPage() {
                     <Icon size={22} strokeWidth={1.8} />
                   </span>
                   <div>
-                    <CardTitle>{resource.title}</CardTitle>
-                    <CardDescription>Reserved product area</CardDescription>
+                    <CardTitle>{t(resource.title)}</CardTitle>
+                    <CardDescription>{t("resources.placeholder")}</CardDescription>
                   </div>
                 </div>
-                <Badge tone="neutral">Planned</Badge>
+                <Badge tone="neutral">{t("status.plannedLabel")}</Badge>
               </CardHeader>
-              <p className={styles.resourceCopy}>{resource.description}</p>
+              <p className={styles.resourceCopy}>{t(resource.description)}</p>
             </Card>
           );
         })}

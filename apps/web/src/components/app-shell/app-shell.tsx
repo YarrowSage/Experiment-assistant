@@ -20,6 +20,8 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 
 import { classNames } from "@/lib/class-names";
+import type { Locale, MessageKey } from "@/locales";
+import { useLocalization } from "@/locales/localization-provider";
 
 import { Button, Dialog, Drawer } from "../ui";
 import styles from "./app-shell.module.css";
@@ -31,19 +33,23 @@ import {
 type NavigationItem = {
   href: string;
   icon: LucideIcon;
-  label: string;
+  label: MessageKey;
 };
 
 const primaryNavigation: NavigationItem[] = [
-  { href: "/", icon: Home, label: "Home" },
-  { href: "/planner", icon: CalendarDays, label: "Planner" },
-  { href: "/experiments", icon: Beaker, label: "Experiments" },
-  { href: "/workbenches", icon: Microscope, label: "Workbenches" },
-  { href: "/analysis", icon: ChartNoAxesColumnIncreasing, label: "Analysis" },
-  { href: "/resources", icon: LibraryBig, label: "Resources" },
+  { href: "/", icon: Home, label: "navigation.home" },
+  { href: "/planner", icon: CalendarDays, label: "navigation.planner" },
+  { href: "/experiments", icon: Beaker, label: "navigation.experiments" },
+  { href: "/workbenches", icon: Microscope, label: "navigation.workbenches" },
+  { href: "/analysis", icon: ChartNoAxesColumnIncreasing, label: "navigation.analysis" },
+  { href: "/resources", icon: LibraryBig, label: "navigation.resources" },
 ];
 
 const mobileNavigation = primaryNavigation.slice(0, 4);
+const languageOptions: ReadonlyArray<{ label: MessageKey; locale: Locale }> = [
+  { label: "settings.simplifiedChinese", locale: "zh-CN" },
+  { label: "settings.english", locale: "en-US" },
+];
 
 function isRouteActive(pathname: string, href: string) {
   return href === "/" ? pathname === "/" : pathname.startsWith(href);
@@ -56,10 +62,14 @@ function SecondaryNavigation({
   config: SecondaryNavigationConfig;
   pathname: string;
 }) {
+  const { t } = useLocalization();
   return (
-    <aside aria-label={`${config.title} navigation`} className={styles.secondary}>
+    <aside
+      aria-label={t("navigation.contextNavigation", { module: t(config.title) })}
+      className={styles.secondary}
+    >
       <div className={styles.secondaryInner}>
-        <h2 className={styles.secondaryTitle}>{config.title}</h2>
+        <h2 className={styles.secondaryTitle}>{t(config.title)}</h2>
         <ul className={styles.secondaryList}>
           {config.items.map((item) => (
             <li key={item.label}>
@@ -72,12 +82,12 @@ function SecondaryNavigation({
                   )}
                   href={item.href}
                 >
-                  {item.label}
+                  {t(item.label)}
                 </Link>
               ) : (
                 <span className={styles.secondaryPlaceholder}>
-                  {item.label}
-                  <span className={styles.plannedLabel}>Planned</span>
+                  {t(item.label)}
+                  <span className={styles.plannedLabel}>{t("status.plannedLabel")}</span>
                 </span>
               )}
             </li>
@@ -90,6 +100,7 @@ function SecondaryNavigation({
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const { locale, setLocale, t } = useLocalization();
   const [dialog, setDialog] = useState<"search" | "new" | "settings" | null>(null);
   const [moreOpen, setMoreOpen] = useState(false);
   const secondaryConfig = resolveSecondaryNavigation(pathname);
@@ -109,17 +120,17 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className={styles.shell}>
       <a className={styles.skipLink} href="#main-content">
-        Skip to main content
+        {t("accessibility.skipToContent")}
       </a>
       <header className={styles.header}>
-        <Link aria-label="Experiment Assistant home" className={styles.brand} href="/">
+        <Link aria-label={`Experiment Assistant · ${t("navigation.home")}`} className={styles.brand} href="/">
           <span aria-hidden="true" className={styles.brandMark}>
             <FlaskConical size={20} strokeWidth={2} />
           </span>
           <span className={styles.brandText}>Experiment Assistant</span>
         </Link>
 
-        <nav aria-label="Primary navigation" className={styles.primaryNav}>
+        <nav aria-label={t("accessibility.primaryNavigation")} className={styles.primaryNav}>
           <ul className={styles.primaryList}>
             {primaryNavigation.map((item) => (
               <li key={item.href}>
@@ -131,7 +142,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                   )}
                   href={item.href}
                 >
-                  {item.label}
+                  {t(item.label)}
                 </Link>
               </li>
             ))}
@@ -140,23 +151,23 @@ export function AppShell({ children }: { children: ReactNode }) {
 
         <div className={styles.headerActions}>
           <button
-            aria-label="Open search shell"
+            aria-label={t("accessibility.openSearch")}
             className={styles.searchButton}
             type="button"
             onClick={() => setDialog("search")}
           >
             <Search aria-hidden="true" size={18} />
-            <span className={styles.searchLabel}>Search</span>
+            <span className={styles.searchLabel}>{t("common.search")}</span>
             <span aria-hidden="true" className={styles.shortcut}>
               Ctrl K
             </span>
           </button>
           <Button size="medium" onClick={() => setDialog("new")}>
             <Plus aria-hidden="true" size={17} />
-            New
+            {t("common.new")}
           </Button>
           <button
-            aria-label="Open settings and profile shell"
+            aria-label={t("accessibility.openSettings")}
             className={classNames(styles.iconButton, styles.settingsButton)}
             type="button"
             onClick={() => setDialog("settings")}
@@ -175,7 +186,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </main>
       </div>
 
-      <nav aria-label="Mobile navigation" className={styles.mobileNav}>
+      <nav aria-label={t("accessibility.mobileNavigation")} className={styles.mobileNav}>
         <ul className={styles.mobileList}>
           {mobileNavigation.map((item) => {
             const Icon = item.icon;
@@ -188,7 +199,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                   href={item.href}
                 >
                   <Icon aria-hidden="true" size={21} strokeWidth={2} />
-                  <span>{item.label}</span>
+                  <span>{t(item.label)}</span>
                 </Link>
               </li>
             );
@@ -196,100 +207,114 @@ export function AppShell({ children }: { children: ReactNode }) {
           <li>
             <button className={styles.mobileButton} type="button" onClick={() => setMoreOpen(true)}>
               <Menu aria-hidden="true" size={21} strokeWidth={2} />
-              <span>More</span>
+              <span>{t("navigation.more")}</span>
             </button>
           </li>
         </ul>
       </nav>
 
       <Dialog
-        description="The global search boundary is ready; searchable records arrive in later issues."
+        description={t("search.description")}
         footer={
           <Button variant="secondary" onClick={() => setDialog(null)}>
-            Close
+            {t("common.close")}
           </Button>
         }
         open={dialog === "search"}
-        title="Search"
+        title={t("search.title")}
         onOpenChange={(open) => setDialog(open ? "search" : null)}
       >
         <p className={styles.modalCopy}>
-          Search will group Projects, Protocols, Runs, resources, and files after those records are
-          implemented. No placeholder results are presented as real data.
+          {t("search.body")}
         </p>
       </Dialog>
 
       <Dialog
-        description="Project, Experiment, and Protocol creation are available."
+        description={t("create.description")}
         footer={
           <Button variant="secondary" onClick={() => setDialog(null)}>
-            Close
+            {t("common.close")}
           </Button>
         }
         open={dialog === "new"}
-        title="Create new"
+        title={t("create.title")}
         onOpenChange={(open) => setDialog(open ? "new" : null)}
       >
         <p className={styles.modalCopy}>
-          Create and manage real Projects, generic Experiments, and immutable Protocol versions.
+          {t("create.body")}
         </p>
         <div className={styles.modalNotice}>
-          <strong>Project creation is available</strong>
-          <p>The New Project form writes through the versioned API to the Default Workspace.</p>
+          <strong>{t("create.projectAvailable")}</strong>
+          <p>{t("create.projectDescription")}</p>
           <Link
             className={styles.modalActionLink}
             href="/experiments/projects"
             onClick={() => setDialog(null)}
           >
-            Open Projects
+            {t("create.openProjects")}
           </Link>
         </div>
         <div className={styles.modalNotice}>
-          <strong>Experiment creation is available</strong>
-          <p>Experiments preserve planned time independently from future actual execution.</p>
+          <strong>{t("create.experimentAvailable")}</strong>
+          <p>{t("create.experimentDescription")}</p>
           <Link
             className={styles.modalActionLink}
             href="/experiments/runs"
             onClick={() => setDialog(null)}
           >
-            Open All Experiments
+            {t("create.openExperiments")}
           </Link>
         </div>
         <div className={styles.modalNotice}>
-          <strong>Protocol creation is available</strong>
-          <p>Open a Project to draft ordered steps and publish an immutable version.</p>
+          <strong>{t("create.protocolAvailable")}</strong>
+          <p>{t("create.protocolDescription")}</p>
           <Link
             className={styles.modalActionLink}
             href="/experiments/projects"
             onClick={() => setDialog(null)}
           >
-            Choose a Project
+            {t("common.chooseProject")}
           </Link>
         </div>
       </Dialog>
 
       <Dialog
-        description="Account, workspace, and preferences are not implemented in the local-only phase."
+        description={t("settings.description")}
         footer={
           <Button variant="secondary" onClick={() => setDialog(null)}>
-            Close
+            {t("common.close")}
           </Button>
         }
         open={dialog === "settings"}
-        title="Settings and profile"
+        title={t("settings.title")}
         onOpenChange={(open) => setDialog(open ? "settings" : null)}
       >
         <p className={styles.modalCopy}>
-          The shell reserves this location without implying that authentication, permissions, or
-          synchronization already exist.
+          {t("settings.boundary")}
         </p>
+        <fieldset className={styles.languagePicker}>
+          <legend>{t("settings.language")}</legend>
+          <p>{t("settings.languageDescription")}</p>
+          {languageOptions.map((option) => (
+            <label key={option.locale}>
+              <input
+                checked={locale === option.locale}
+                name="interface-language"
+                type="radio"
+                value={option.locale}
+                onChange={() => setLocale(option.locale)}
+              />
+              {t(option.label)}
+            </label>
+          ))}
+        </fieldset>
       </Dialog>
 
       <Drawer
-        description="Additional product areas and settings"
+        description={t("navigation.settingsProfile")}
         open={moreOpen}
         position="bottom"
-        title="More"
+        title={t("navigation.more")}
         onOpenChange={setMoreOpen}
       >
         <ul className={styles.moreList}>
@@ -305,7 +330,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                   onClick={() => setMoreOpen(false)}
                 >
                   <Icon aria-hidden="true" size={20} />
-                  {item.label}
+                  {t(item.label)}
                 </Link>
               </li>
             );
@@ -320,7 +345,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               }}
             >
               <Search aria-hidden="true" size={20} />
-              Search
+              {t("common.search")}
             </button>
           </li>
           <li>
@@ -333,7 +358,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               }}
             >
               <Settings aria-hidden="true" size={20} />
-              Settings and profile
+              {t("navigation.settingsProfile")}
             </button>
           </li>
         </ul>

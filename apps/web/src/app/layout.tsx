@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 
 import { AppShell } from "@/components/app-shell/app-shell";
+import { LocalizationProvider } from "@/locales/localization-provider";
 
 import "./globals.css";
 
@@ -36,9 +37,11 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
+    <html lang="zh-CN">
       <body>
-        <AppShell>{children}</AppShell>
+        <LocalizationProvider>
+          <AppShell>{children}</AppShell>
+        </LocalizationProvider>
       </body>
     </html>
   );

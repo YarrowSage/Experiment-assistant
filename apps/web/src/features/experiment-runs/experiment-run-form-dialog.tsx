@@ -3,6 +3,8 @@
 import { useId, useState, type FormEvent } from "react";
 
 import { Button, Dialog, Field, Input, Select, Textarea } from "@/components/ui";
+import { useLocalization } from "@/locales/localization-provider";
+import { presentError } from "@/locales";
 import type { Project } from "@/features/projects/types";
 import { protocolVersionLabel } from "@/features/protocols/types";
 import type { Protocol } from "@/features/protocols/types";
@@ -69,6 +71,7 @@ export function ExperimentRunFormDialog({
   protocols: Protocol[];
   run?: ExperimentRun | null;
 }) {
+  const { t } = useLocalization();
   const formId = useId();
   const [form, setForm] = useState(() => initialState(run, fixedProjectId, projects));
   const [errors, setErrors] = useState<Partial<Record<"projectId" | "title" | "plannedEnd", string>>>({});
@@ -83,10 +86,10 @@ export function ExperimentRunFormDialog({
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const nextErrors: typeof errors = {};
-    if (!form.projectId) nextErrors.projectId = "Select a Project.";
-    if (!form.title.trim()) nextErrors.title = "Experiment name is required.";
+    if (!form.projectId) nextErrors.projectId = t("experiments.validation.projectRequired");
+    if (!form.title.trim()) nextErrors.title = t("experiments.validation.nameRequired");
     if (form.plannedStart && form.plannedEnd && form.plannedEnd < form.plannedStart) {
-      nextErrors.plannedEnd = "Planned end cannot be earlier than planned start.";
+      nextErrors.plannedEnd = t("experiments.validation.dateOrder");
     }
     if (Object.keys(nextErrors).length) {
       setErrors(nextErrors);
@@ -122,9 +125,7 @@ export function ExperimentRunFormDialog({
       setRequestError(
         error instanceof ExperimentRunApiError && error.status === 409
           ? error.message
-          : error instanceof Error
-            ? error.message
-            : "The Experiment could not be saved.",
+          : presentError(error, t, "experiments.saveError"),
       );
     } finally {
       setSubmitting(false);
@@ -133,24 +134,24 @@ export function ExperimentRunFormDialog({
 
   return (
     <Dialog
-      description="Planned time stays separate from actual execution time."
+      description={t("experiments.form.description")}
       footer={
         <>
           <Button disabled={submitting} variant="secondary" onClick={() => onOpenChange(false)}>
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button disabled={submitting} form={formId} type="submit">
-            {submitting ? "Saving…" : run ? "Save changes" : "Create Experiment"}
+            {submitting ? t("common.saving") : run ? t("common.saveChanges") : t("experiments.form.create")}
           </Button>
         </>
       }
       open={open}
-      title={run ? "Edit Experiment" : "New Experiment"}
+      title={run ? t("experiments.form.editTitle") : t("experiments.form.newTitle")}
       onOpenChange={onOpenChange}
     >
       <form className={styles.form} id={formId} onSubmit={submit}>
         {requestError ? <p className={styles.requestError} role="alert">{requestError}</p> : null}
-        <Field error={errors.projectId} label="Project" required>
+        <Field error={errors.projectId} label={t("common.project")} required>
           {(props) => (
             <Select
               {...props}
@@ -161,7 +162,7 @@ export function ExperimentRunFormDialog({
                 update("protocolVersionId", "");
               }}
             >
-              <option value="">Select a Project</option>
+              <option value="">{t("experiments.form.projectSelect")}</option>
               {projects.filter((project) => project.status !== "archived").map((project) => (
                 <option key={project.id} value={project.id}>{project.title}</option>
               ))}
@@ -169,8 +170,8 @@ export function ExperimentRunFormDialog({
           )}
         </Field>
         <Field
-          hint="Only published versions can be assigned. The exact version stays attached to this Experiment."
-          label="Protocol version"
+          hint={t("experiments.form.protocolHint")}
+          label={t("experiments.form.protocolVersion")}
         >
           {(props) => (
             <Select
@@ -178,7 +179,7 @@ export function ExperimentRunFormDialog({
               value={form.protocolVersionId}
               onChange={(event) => update("protocolVersionId", event.target.value)}
             >
-              <option value="">No Protocol</option>
+              <option value="">{t("experiments.form.noProtocol")}</option>
               {protocols
                 .filter((protocol) => protocol.project_id === form.projectId)
                 .flatMap((protocol) =>
@@ -197,30 +198,30 @@ export function ExperimentRunFormDialog({
             </Select>
           )}
         </Field>
-        <Field error={errors.title} label="Experiment name" required>
+        <Field error={errors.title} label={t("experiments.form.name")} required>
           {(props) => <Input {...props} value={form.title} onChange={(event) => update("title", event.target.value)} />}
         </Field>
-        <Field label="Purpose">
+        <Field label={t("common.purpose")}>
           {(props) => <Textarea {...props} rows={3} value={form.purpose} onChange={(event) => update("purpose", event.target.value)} />}
         </Field>
-        <Field label="Description">
+        <Field label={t("common.description")}>
           {(props) => <Textarea {...props} rows={3} value={form.description} onChange={(event) => update("description", event.target.value)} />}
         </Field>
         <div className={styles.formGrid}>
-          <Field label="Status">
+          <Field label={t("common.status")}>
             {(props) => (
               <Select {...props} value={form.status} onChange={(event) => update("status", event.target.value as EditableStatus)}>
-                <option value="draft">Draft</option>
-                <option value="planned">Planned</option>
-                <option value="ready">Ready</option>
-                <option value="cancelled">Cancelled</option>
+                <option value="draft">{t("status.draft")}</option>
+                <option value="planned">{t("status.planned")}</option>
+                <option value="ready">{t("status.ready")}</option>
+                <option value="cancelled">{t("status.cancelled")}</option>
               </Select>
             )}
           </Field>
-          <Field label="Planned start">
+          <Field label={t("experiments.form.plannedStart")}>
             {(props) => <Input {...props} type="datetime-local" value={form.plannedStart} onChange={(event) => update("plannedStart", event.target.value)} />}
           </Field>
-          <Field error={errors.plannedEnd} label="Planned end">
+          <Field error={errors.plannedEnd} label={t("experiments.form.plannedEnd")}>
             {(props) => <Input {...props} type="datetime-local" value={form.plannedEnd} onChange={(event) => update("plannedEnd", event.target.value)} />}
           </Field>
         </div>

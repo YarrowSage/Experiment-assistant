@@ -275,6 +275,20 @@ Frontend code should group module features, shared components, API access, and
 design tokens. React components must not import SQLAlchemy or know SQLite file
 paths.
 
+### Frontend localization
+
+The implemented interface supports Simplified Chinese (`zh-CN`) and English
+(`en-US`), with Simplified Chinese as the default. A lightweight typed catalog
+under `apps/web/src/locales/` provides `t("navigation.home")`-style access and
+compile-time checks that both catalogs contain the same keys. The selected
+locale is stored only in browser `localStorage`; no account or backend locale
+preference is implied.
+
+Localization applies to presentation copy, status labels, dates, validation,
+and accessible names. It must not change API values, database enums, JSON keys,
+identifiers, migration values, or researcher-authored scientific content.
+`Protocol` is presented as `实验方案` in Simplified Chinese.
+
 ## 9. API and Contract Practice
 
 - version public endpoints;

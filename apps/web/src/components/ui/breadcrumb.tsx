@@ -1,5 +1,9 @@
+"use client";
+
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
+
+import { useLocalization } from "@/locales/localization-provider";
 
 import styles from "./ui.module.css";
 
@@ -9,19 +13,18 @@ export type BreadcrumbItem = {
 };
 
 export function Breadcrumb({ items }: { items: BreadcrumbItem[] }) {
+  const { t } = useLocalization();
   return (
-    <nav aria-label="Breadcrumb" className={styles.breadcrumb}>
+    <nav aria-label={t("accessibility.breadcrumb")} className={styles.breadcrumb}>
       <ol className={styles.breadcrumbList}>
         {items.map((item, index) => {
           const isCurrent = index === items.length - 1;
           return (
-            <li key={`${item.label}-${index}`}>
+            <li className={styles.breadcrumbItem} key={`${item.label}-${index}`}>
               {index > 0 ? (
-                <ChevronRight
-                  aria-hidden="true"
-                  className={styles.breadcrumbSeparator}
-                  size={14}
-                />
+                <span aria-hidden="true" className={styles.breadcrumbSeparator}>
+                  <ChevronRight size={14} />
+                </span>
               ) : null}
               {item.href && !isCurrent ? (
                 <Link className={styles.breadcrumbLink} href={item.href}>

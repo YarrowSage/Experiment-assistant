@@ -14,6 +14,8 @@ import {
   PageHeader,
   Select,
 } from "@/components/ui";
+import { useLocalization } from "@/locales/localization-provider";
+import { presentError } from "@/locales";
 
 import { listProjects } from "./api";
 import { ArchiveProjectDialog } from "./archive-project-dialog";
@@ -25,6 +27,7 @@ import type { Project, ProjectStatus } from "./types";
 type CurrentStatus = Exclude<ProjectStatus, "archived"> | "";
 
 export function ProjectsPage() {
+  const { t } = useLocalization();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -43,11 +46,11 @@ export function ProjectsPage() {
       const response = await listProjects({ archived, search, status });
       setProjects(response.items);
     } catch (error) {
-      setLoadError(error instanceof Error ? error.message : "Projects could not be loaded.");
+      setLoadError(presentError(error, t, "projects.loadError"));
     } finally {
       setLoading(false);
     }
-  }, [archived, search, status]);
+  }, [archived, search, status, t]);
 
   useEffect(() => {
     let ignore = false;
@@ -60,7 +63,7 @@ export function ProjectsPage() {
         }
       } catch (error) {
         if (!ignore) {
-          setLoadError(error instanceof Error ? error.message : "Projects could not be loaded.");
+          setLoadError(presentError(error, t, "projects.loadError"));
         }
       } finally {
         if (!ignore) setLoading(false);
@@ -70,7 +73,7 @@ export function ProjectsPage() {
     return () => {
       ignore = true;
     };
-  }, [archived, search, status]);
+  }, [archived, search, status, t]);
 
   function handleSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -100,17 +103,17 @@ export function ProjectsPage() {
         action={
           <Button onClick={() => setNewProjectOpen(true)}>
             <Plus aria-hidden="true" size={17} />
-            New Project
+            {t("projects.new")}
           </Button>
         }
-        breadcrumb={[{ href: "/", label: "Home" }, { label: "Projects" }]}
-        description="Organize scientific goals, planning context, and the work that will follow."
-        eyebrow="Experiments"
-        title="Projects"
+        breadcrumb={[{ href: "/", label: t("navigation.home") }, { label: t("projects.title") }]}
+        description={t("projects.description")}
+        eyebrow={t("navigation.experiments")}
+        title={t("projects.title")}
       />
 
       <Card className={styles.filtersCard}>
-        <div className={styles.viewToggle} aria-label="Project list" role="group">
+        <div className={styles.viewToggle} aria-label={t("accessibility.projectList")} role="group">
           <button
             aria-pressed={!archived}
             type="button"
@@ -122,7 +125,7 @@ export function ProjectsPage() {
               }
             }}
           >
-            Current
+            {t("common.current")}
           </button>
           <button
             aria-pressed={archived}
@@ -135,12 +138,12 @@ export function ProjectsPage() {
               }
             }}
           >
-            Archived
+            {t("common.archived")}
           </button>
         </div>
         <form className={styles.filterForm} role="search" onSubmit={handleSearch}>
           {!archived ? (
-            <Field label="Status">
+            <Field label={t("common.status")}>
               {(props) => (
                 <Select
                   {...props}
@@ -153,25 +156,25 @@ export function ProjectsPage() {
                     }
                   }}
                 >
-                  <option value="">All current statuses</option>
-                  <option value="planning">Planning</option>
-                  <option value="active">Active</option>
-                  <option value="paused">Paused</option>
-                  <option value="completed">Completed</option>
+                  <option value="">{t("projects.currentStatuses")}</option>
+                  <option value="planning">{t("status.planning")}</option>
+                  <option value="active">{t("status.active")}</option>
+                  <option value="paused">{t("status.paused")}</option>
+                  <option value="completed">{t("status.completed")}</option>
                 </Select>
               )}
             </Field>
           ) : null}
-          <Field label="Search projects">
+          <Field label={t("projects.searchLabel")}>
             {(props) => (
               <div className={styles.searchControl}>
                 <Input
                   {...props}
-                  placeholder="Name, description, or objective"
+                  placeholder={t("projects.searchPlaceholder")}
                   value={searchInput}
                   onChange={(event) => setSearchInput(event.target.value)}
                 />
-                <Button aria-label="Search projects" size="icon" type="submit" variant="secondary">
+                <Button aria-label={t("projects.searchLabel")} size="icon" type="submit" variant="secondary">
                   <Search aria-hidden="true" size={18} />
                 </Button>
               </div>
@@ -182,13 +185,13 @@ export function ProjectsPage() {
 
       {loading ? (
         <Card>
-          <LoadingState label="Loading projects" />
+          <LoadingState label={t("projects.loading")} />
         </Card>
       ) : loadError ? (
         <Card>
           <ErrorState
             description={loadError}
-            title="Projects could not be loaded"
+            title={t("projects.loadError")}
             onRetry={() => void load()}
           />
         </Card>
@@ -209,19 +212,19 @@ export function ProjectsPage() {
             action={
               archived ? undefined : (
                 <Button variant="secondary" onClick={() => setNewProjectOpen(true)}>
-                  New Project
+                  {t("projects.new")}
                 </Button>
               )
             }
             description={
               archived
-                ? "Archived Projects remain preserved and will appear here when available."
+                ? t("projects.archivedEmpty")
                 : search || status
-                  ? "No current Projects match these filters."
-                  : "Create the first Project to establish its scientific objective and planning context."
+                  ? t("projects.filteredEmpty")
+                  : t("projects.empty")
             }
             icon={<FolderKanban size={23} />}
-            title={archived ? "No archived Projects" : "No Projects yet"}
+            title={archived ? t("projects.noArchived") : t("projects.noProjects")}
           />
         </Card>
       )}

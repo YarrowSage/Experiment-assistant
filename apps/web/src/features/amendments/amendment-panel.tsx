@@ -5,6 +5,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { Button, Card, CardContent, CardHeader, CardTitle, Dialog, EmptyState, ErrorState, Field, Input, LoadingState, Select, Textarea } from "@/components/ui";
 import type { RunExecution, RunStepRecord } from "@/features/execution/types";
+import { presentError, type MessageKey, type TranslationValues } from "@/locales";
+import { useLocalization } from "@/locales/localization-provider";
 
 import { createAmendment, listAmendments } from "./api";
 import styles from "./amendments.module.css";
@@ -28,6 +30,7 @@ export function AmendmentPanel({
   execution: RunExecution;
   onExecutionChanged: (execution: RunExecution) => void;
 }) {
+  const { t } = useLocalization();
   const [history, setHistory] = useState<Amendment[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -38,11 +41,11 @@ export function AmendmentPanel({
       setHistory(await listAmendments(execution.run.id));
       setError(null);
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Amendment history could not be loaded.");
+      setError(presentError(cause, t, "amendments.loadError"));
     } finally {
       setLoading(false);
     }
-  }, [execution.run.id]);
+  }, [execution.run.id, t]);
 
   useEffect(() => {
     let ignore = false;
@@ -54,28 +57,28 @@ export function AmendmentPanel({
           setError(null);
         }
       } catch (cause) {
-        if (!ignore) setError(cause instanceof Error ? cause.message : "Amendment history could not be loaded.");
+        if (!ignore) setError(presentError(cause, t, "amendments.loadError"));
       } finally {
         if (!ignore) setLoading(false);
       }
     }
     void loadHistory();
     return () => { ignore = true; };
-  }, [execution.run.id]);
+  }, [execution.run.id, t]);
 
   return (
     <Card>
       <CardHeader>
         <div>
-          <CardTitle>Corrections and amendments</CardTitle>
-          <p className={styles.cardDescription}>Completed records are corrected transparently; the prior value remains in history.</p>
+          <CardTitle>{t("amendments.title")}</CardTitle>
+          <p className={styles.cardDescription}>{t("amendments.description")}</p>
         </div>
-        <Button variant="secondary" onClick={() => setOpen(true)}><FilePenLine aria-hidden="true" size={17} />Amend record</Button>
+        <Button variant="secondary" onClick={() => setOpen(true)}><FilePenLine aria-hidden="true" size={17} />{t("amendments.action")}</Button>
       </CardHeader>
       <CardContent>
-        {loading ? <LoadingState label="Loading amendment history" /> : error && !history ? <ErrorState title="History could not be loaded" description={error} onRetry={() => void load()} /> : history?.length ? <AmendmentHistory amendments={history} /> : <EmptyState icon={<History size={22} />} title="No amendments" description="The completed record has not been corrected." />}
+        {loading ? <LoadingState label={t("amendments.loading")} /> : error && !history ? <ErrorState title={t("amendments.loadError")} description={error} onRetry={() => void load()} /> : history?.length ? <AmendmentHistory amendments={history} /> : <EmptyState icon={<History size={22} />} title={t("amendments.none")} description={t("amendments.noneDescription")} />}
         {error && history ? <p className={styles.requestError} role="alert">{error}</p> : null}
-        <p className={styles.integrityNote}>This is transparent correction history. It is not a claim of GLP, GxP, or regulatory compliance.</p>
+        <p className={styles.integrityNote}>{t("amendments.integrityNote")}</p>
       </CardContent>
       <AmendmentDialog
         execution={execution}
@@ -92,7 +95,8 @@ export function AmendmentPanel({
 }
 
 function AmendmentDialog({ execution, onAmended, onOpenChange, open }: { execution: RunExecution; onAmended: (execution: RunExecution, amendment: Amendment) => void; onOpenChange: (open: boolean) => void; open: boolean }) {
-  const targets = useMemo(() => buildTargets(execution), [execution]);
+  const { t } = useLocalization();
+  const targets = useMemo(() => buildTargets(execution, t), [execution, t]);
   const [targetKey, setTargetKey] = useState(targets[0]?.key ?? "");
   const [corrected, setCorrected] = useState("");
   const [reason, setReason] = useState("");
@@ -114,7 +118,7 @@ function AmendmentDialog({ execution, onAmended, onOpenChange, open }: { executi
 
   function review() {
     if (!target || !corrected.trim() || !reason.trim()) {
-      setError("Choose content, enter its correction, and provide a reason.");
+      setError(t("amendments.validation"));
       return;
     }
     setError(null);
@@ -140,7 +144,7 @@ function AmendmentDialog({ execution, onAmended, onOpenChange, open }: { executi
       setReason("");
       onAmended(result.execution, result.amendment);
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "The amendment could not be recorded.");
+      setError(presentError(cause, t, "amendments.saveError"));
     } finally {
       setSaving(false);
     }
@@ -148,25 +152,25 @@ function AmendmentDialog({ execution, onAmended, onOpenChange, open }: { executi
 
   return (
     <Dialog
-      description={reviewing ? "Review the original value, correction, and reason before recording this amendment." : "Choose the completed content to correct. The prior value will remain visible in history."}
-      footer={reviewing ? <><Button disabled={saving} variant="secondary" onClick={() => setReviewing(false)}>Back</Button><Button disabled={saving} onClick={() => void confirm()}>{saving ? "Recording…" : "Confirm amendment"}</Button></> : <><Button variant="secondary" onClick={() => changeOpen(false)}>Cancel</Button><Button onClick={review}>Review correction</Button></>}
+      description={reviewing ? t("amendments.reviewDescription") : t("amendments.editDescription")}
+      footer={reviewing ? <><Button disabled={saving} variant="secondary" onClick={() => setReviewing(false)}>{t("common.back")}</Button><Button disabled={saving} onClick={() => void confirm()}>{saving ? t("amendments.recording") : t("amendments.confirm")}</Button></> : <><Button variant="secondary" onClick={() => changeOpen(false)}>{t("common.cancel")}</Button><Button onClick={review}>{t("amendments.review")}</Button></>}
       onOpenChange={changeOpen}
       open={open}
-      title={reviewing ? "Review amendment" : "Amend completed record"}
+      title={reviewing ? t("amendments.reviewTitle") : t("amendments.editTitle")}
     >
       {reviewing && target ? (
         <dl className={styles.reviewList}>
-          <div><dt>Content</dt><dd>{target.label}</dd></div>
-          <div><dt>Original</dt><dd>{displayValue(target.value)}</dd></div>
-          <div><dt>Corrected</dt><dd>{displayValue(corrected)}</dd></div>
-          <div><dt>Reason</dt><dd>{reason.trim()}</dd></div>
+          <div><dt>{t("common.content")}</dt><dd>{target.label}</dd></div>
+          <div><dt>{t("common.original")}</dt><dd>{displayValue(target.value, t)}</dd></div>
+          <div><dt>{t("common.corrected")}</dt><dd>{displayValue(corrected, t)}</dd></div>
+          <div><dt>{t("common.reason")}</dt><dd>{reason.trim()}</dd></div>
         </dl>
       ) : (
         <div className={styles.dialogStack}>
-          <Field label="Content to correct" required>{(props) => <Select {...props} value={target?.key ?? ""} onChange={(event) => { setTargetKey(event.target.value); setCorrected(""); }}><optgroup label="Experiment">{targets.filter((item) => item.targetType === "experiment_run").map((item) => <option key={item.key} value={item.key}>{item.label}</option>)}</optgroup>{execution.steps.length ? <optgroup label="Run steps">{targets.filter((item) => item.targetType === "run_step_record").map((item) => <option key={item.key} value={item.key}>{item.label}</option>)}</optgroup> : null}</Select>}</Field>
-          {target ? <div className={styles.originalValue}><span>Original</span><strong>{displayValue(target.value)}</strong></div> : null}
-          <Field label="Corrected value" required>{(props) => target?.inputType === "datetime-local" ? <Input {...props} type="datetime-local" value={corrected} onChange={(event) => setCorrected(event.target.value)} /> : <Textarea {...props} rows={3} value={corrected} onChange={(event) => setCorrected(event.target.value)} />}</Field>
-          <Field label="Correction reason" hint="Explain why the completed record needs correction." required>{(props) => <Textarea {...props} rows={3} value={reason} onChange={(event) => setReason(event.target.value)} />}</Field>
+          <Field label={t("amendments.contentToCorrect")} required>{(props) => <Select {...props} value={target?.key ?? ""} onChange={(event) => { setTargetKey(event.target.value); setCorrected(""); }}><optgroup label={t("common.experiment")}>{targets.filter((item) => item.targetType === "experiment_run").map((item) => <option key={item.key} value={item.key}>{item.label}</option>)}</optgroup>{execution.steps.length ? <optgroup label={t("amendments.runSteps")}>{targets.filter((item) => item.targetType === "run_step_record").map((item) => <option key={item.key} value={item.key}>{item.label}</option>)}</optgroup> : null}</Select>}</Field>
+          {target ? <div className={styles.originalValue}><span>{t("common.original")}</span><strong>{displayValue(target.value, t)}</strong></div> : null}
+          <Field label={t("amendments.correctedValue")} required>{(props) => target?.inputType === "datetime-local" ? <Input {...props} type="datetime-local" value={corrected} onChange={(event) => setCorrected(event.target.value)} /> : <Textarea {...props} rows={3} value={corrected} onChange={(event) => setCorrected(event.target.value)} />}</Field>
+          <Field label={t("amendments.correctionReason")} hint={t("amendments.reasonHint")} required>{(props) => <Textarea {...props} rows={3} value={reason} onChange={(event) => setReason(event.target.value)} />}</Field>
         </div>
       )}
       {error ? <p className={styles.requestError} role="alert">{error}</p> : null}
@@ -175,21 +179,24 @@ function AmendmentDialog({ execution, onAmended, onOpenChange, open }: { executi
 }
 
 function AmendmentHistory({ amendments }: { amendments: Amendment[] }) {
-  return <ol className={styles.historyList}>{amendments.map((amendment) => <li key={amendment.id}><div className={styles.historyHeading}><strong>{fieldLabel(amendment.target_field)}</strong><span>Revision {amendment.prior_revision} → {amendment.resulting_revision}</span></div><dl><div><dt>Original</dt><dd>{displayValue(amendment.original_value)}</dd></div><div><dt>Corrected</dt><dd>{displayValue(amendment.corrected_value)}</dd></div><div><dt>Reason</dt><dd>{amendment.reason}</dd></div><div><dt>Time</dt><dd><time dateTime={amendment.created_at}>{formatDate(amendment.created_at)}</time></dd></div></dl></li>)}</ol>;
+  const { locale, t } = useLocalization();
+  return <ol className={styles.historyList}>{amendments.map((amendment) => <li key={amendment.id}><div className={styles.historyHeading}><strong>{fieldLabel(amendment.target_field, t)}</strong><span>{t("common.revision", { revision: `${amendment.prior_revision} → ${amendment.resulting_revision}` })}</span></div><dl><div><dt>{t("common.original")}</dt><dd>{displayValue(amendment.original_value, t)}</dd></div><div><dt>{t("common.corrected")}</dt><dd>{displayValue(amendment.corrected_value, t)}</dd></div><div><dt>{t("common.reason")}</dt><dd>{amendment.reason}</dd></div><div><dt>{t("common.time")}</dt><dd><time dateTime={amendment.created_at}>{formatDate(amendment.created_at, locale)}</time></dd></div></dl></li>)}</ol>;
 }
 
-function buildTargets(execution: RunExecution): Target[] {
+type Translator = (key: MessageKey, values?: TranslationValues) => string;
+
+function buildTargets(execution: RunExecution, t: Translator): Target[] {
   const runTargets: Target[] = [
-    runTarget(execution, "title", "Experiment title", "text"),
-    runTarget(execution, "description", "Description", "text"),
-    runTarget(execution, "purpose", "Purpose", "text"),
-    runTarget(execution, "completion_note", "Completion note", "text"),
-    runTarget(execution, "actual_start_at", "Actual start", "datetime-local"),
-    runTarget(execution, "actual_end_at", "Actual end", "datetime-local"),
+    runTarget(execution, "title", t("amendments.targetTitle"), "text"),
+    runTarget(execution, "description", t("common.description"), "text"),
+    runTarget(execution, "purpose", t("common.purpose"), "text"),
+    runTarget(execution, "completion_note", t("amendments.targetCompletionNote"), "text"),
+    runTarget(execution, "actual_start_at", t("amendments.targetActualStart"), "datetime-local"),
+    runTarget(execution, "actual_end_at", t("amendments.targetActualEnd"), "datetime-local"),
   ];
   const stepTargets = execution.steps.flatMap((step) => [
-    stepTarget(step, "actual_start_at", `Step ${step.position}: ${step.title_snapshot} — actual start`),
-    stepTarget(step, "actual_end_at", `Step ${step.position}: ${step.title_snapshot} — actual end`),
+    stepTarget(step, "actual_start_at", t("amendments.stepActualStart", { position: step.position, title: step.title_snapshot })),
+    stepTarget(step, "actual_end_at", t("amendments.stepActualEnd", { position: step.position, title: step.title_snapshot })),
   ]);
   return [...runTargets, ...stepTargets];
 }
@@ -202,6 +209,17 @@ function stepTarget(step: RunStepRecord, field: "actual_start_at" | "actual_end_
   return { key: `run_step_record:${step.id}:${field}`, label, targetType: "run_step_record", targetId: step.id, field, value: step[field], revision: step.revision, inputType: "datetime-local" };
 }
 
-function fieldLabel(value: string) { return value.replaceAll("_", " ").replace(/^./, (character) => character.toUpperCase()); }
-function displayValue(value: string | null) { return value?.trim() || "Not recorded"; }
-function formatDate(value: string) { return new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(value)); }
+function fieldLabel(value: string, t: Translator) {
+  const labels: Record<string, MessageKey> = {
+    title: "amendments.targetTitle",
+    description: "common.description",
+    purpose: "common.purpose",
+    completion_note: "amendments.targetCompletionNote",
+    actual_start_at: "amendments.targetActualStart",
+    actual_end_at: "amendments.targetActualEnd",
+  };
+  const key = labels[value];
+  return key ? t(key) : value.replaceAll("_", " ");
+}
+function displayValue(value: string | null, t: Translator) { return value?.trim() || t("common.notRecorded"); }
+function formatDate(value: string, locale: string) { return new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" }).format(new Date(value)); }

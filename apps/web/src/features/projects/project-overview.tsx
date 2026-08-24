@@ -14,6 +14,8 @@ import {
   LoadingState,
   PageHeader,
 } from "@/components/ui";
+import { useLocalization } from "@/locales/localization-provider";
+import { presentError } from "@/locales";
 
 import { getProject } from "./api";
 import { ArchiveProjectDialog } from "./archive-project-dialog";
@@ -23,6 +25,7 @@ import styles from "./projects.module.css";
 import type { Project } from "./types";
 
 export function ProjectOverview({ projectId }: { projectId: string }) {
+  const { locale, t } = useLocalization();
   const router = useRouter();
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
@@ -36,11 +39,11 @@ export function ProjectOverview({ projectId }: { projectId: string }) {
     try {
       setProject(await getProject(projectId));
     } catch (error) {
-      setLoadError(error instanceof Error ? error.message : "The Project could not be loaded.");
+      setLoadError(presentError(error, t, "projects.loadError"));
     } finally {
       setLoading(false);
     }
-  }, [projectId]);
+  }, [projectId, t]);
 
   useEffect(() => {
     let ignore = false;
@@ -53,9 +56,7 @@ export function ProjectOverview({ projectId }: { projectId: string }) {
         }
       } catch (error) {
         if (!ignore) {
-          setLoadError(
-            error instanceof Error ? error.message : "The Project could not be loaded.",
-          );
+          setLoadError(presentError(error, t, "projects.loadError"));
         }
       } finally {
         if (!ignore) setLoading(false);
@@ -65,12 +66,12 @@ export function ProjectOverview({ projectId }: { projectId: string }) {
     return () => {
       ignore = true;
     };
-  }, [projectId]);
+  }, [projectId, t]);
 
   if (loading) {
     return (
       <Card>
-        <LoadingState label="Loading Project overview" />
+        <LoadingState label={t("projects.loadingOverview")} />
       </Card>
     );
   }
@@ -79,8 +80,8 @@ export function ProjectOverview({ projectId }: { projectId: string }) {
     return (
       <Card>
         <ErrorState
-          description={loadError ?? "The requested Project was not found."}
-          title="Project could not be opened"
+          description={loadError ?? t("projects.notFound")}
+          title={t("projects.openError")}
           onRetry={() => void load()}
         />
       </Card>
@@ -96,62 +97,62 @@ export function ProjectOverview({ projectId }: { projectId: string }) {
             <div className={styles.headerActions}>
               <Button variant="secondary" onClick={() => setEditing(true)}>
                 <Pencil aria-hidden="true" size={17} />
-                Edit
+                {t("common.edit")}
               </Button>
               <Button variant="secondary" onClick={() => setArchiving(true)}>
                 <Archive aria-hidden="true" size={17} />
-                Archive
+                {t("common.archive")}
               </Button>
             </div>
           )
         }
         breadcrumb={[
-          { href: "/experiments/projects", label: "Projects" },
+          { href: "/experiments/projects", label: t("projects.title") },
           { label: project.title },
         ]}
-        description="Project Overview preserves the scientific purpose and planning context."
-        eyebrow="Project"
+        description={t("projects.overviewDescription")}
+        eyebrow={t("common.project")}
         title={project.title}
       />
 
       <div className={styles.overviewLayout}>
         <Card>
           <CardHeader>
-            <CardTitle>Overview</CardTitle>
+            <CardTitle>{t("common.overview")}</CardTitle>
             <ProjectStatusBadge status={project.status} />
           </CardHeader>
           <CardContent className={styles.detailList}>
             <section>
-              <h3>Description</h3>
-              <p>{project.description ?? "No description recorded."}</p>
+              <h3>{t("common.description")}</h3>
+              <p>{project.description ?? t("common.noDescription")}</p>
             </section>
             <section>
-              <h3>Objective</h3>
-              <p>{project.objective ?? "No objective recorded."}</p>
+              <h3>{t("common.objective")}</h3>
+              <p>{project.objective ?? t("common.noObjective")}</p>
             </section>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Planning details</CardTitle>
+            <CardTitle>{t("projects.planningDetails")}</CardTitle>
           </CardHeader>
           <CardContent className={styles.detailList}>
             <section className={styles.iconDetail}>
               <CalendarRange aria-hidden="true" size={18} />
               <div>
-                <h3>Planning range</h3>
+                <h3>{t("projects.planningRange")}</h3>
                 <p>
-                  {project.start_date ? formatPlanningDate(project.start_date) : "No start date"}
+                  {project.start_date ? formatPlanningDate(project.start_date, locale) : t("common.noStartDate")}
                   {" – "}
-                  {project.end_date ? formatPlanningDate(project.end_date) : "Open ended"}
+                  {project.end_date ? formatPlanningDate(project.end_date, locale) : t("common.openEnded")}
                 </p>
               </div>
             </section>
             <section className={styles.iconDetail}>
               <Tags aria-hidden="true" size={18} />
               <div>
-                <h3>Tags</h3>
+                <h3>{t("projects.tags")}</h3>
                 {project.tags.length ? (
                   <div className={styles.tagList}>
                     {project.tags.map((tag) => (
@@ -161,7 +162,7 @@ export function ProjectOverview({ projectId }: { projectId: string }) {
                     ))}
                   </div>
                 ) : (
-                  <p>No tags recorded.</p>
+                  <p>{t("projects.noTags")}</p>
                 )}
               </div>
             </section>
@@ -171,16 +172,16 @@ export function ProjectOverview({ projectId }: { projectId: string }) {
 
       <Card>
         <CardHeader>
-          <CardTitle>Project record</CardTitle>
+          <CardTitle>{t("projects.record")}</CardTitle>
         </CardHeader>
         <CardContent className={styles.recordMetadata}>
           <span>
-            Created <time dateTime={project.created_at}>{formatUpdatedAt(project.created_at)}</time>
+            {t("common.created", { date: formatUpdatedAt(project.created_at, locale) })}
           </span>
           <span>
-            Updated <time dateTime={project.updated_at}>{formatUpdatedAt(project.updated_at)}</time>
+            {t("common.updated", { date: formatUpdatedAt(project.updated_at, locale) })}
           </span>
-          <span>Revision {project.revision}</span>
+          <span>{t("common.revision", { revision: project.revision })}</span>
         </CardContent>
       </Card>
 
@@ -188,12 +189,8 @@ export function ProjectOverview({ projectId }: { projectId: string }) {
         <div className={styles.plannedModules}>
           <FileText aria-hidden="true" size={23} />
           <div>
-            <h2>Project workflows</h2>
-            <p>
-              Experiments and immutable Protocol versions are available from the Project
-              navigation. Planner, Files, and Analysis remain planned and no records are invented
-              here.
-            </p>
+            <h2>{t("projects.workflows")}</h2>
+            <p>{t("projects.workflowsDescription")}</p>
           </div>
         </div>
       </Card>
