@@ -31,7 +31,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     });
   } catch {
     throw new ProjectApiError(
-      "The Project API is unavailable. Check that the local API is running and try again.",
+      "project_api_unavailable",
       0,
       "project_api_unavailable",
     );
@@ -46,13 +46,13 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     const validationMessage = Array.isArray(payload.detail)
       ? payload.detail.map((item) => item.msg).filter(Boolean).join(" ")
       : undefined;
+    const code = payload.error?.code ?? structuredDetail?.code ?? "project_request_failed";
     const message =
       payload.error?.message ??
       structuredDetail?.message ??
       validationMessage ??
       (typeof payload.detail === "string" ? payload.detail : undefined) ??
-      `Project request failed with status ${response.status}.`;
-    const code = payload.error?.code ?? structuredDetail?.code ?? "project_request_failed";
+      code;
     throw new ProjectApiError(message, response.status, code);
   }
 

@@ -191,7 +191,7 @@ export function ExperimentRunFormDialog({
                     )
                     .map((version) => (
                       <option key={version.id} value={version.id}>
-                        {protocolVersionLabel(protocol, version)}
+                        {protocolVersionLabel(protocol, version, t)}
                       </option>
                     )),
                 )}

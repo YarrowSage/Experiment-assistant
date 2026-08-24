@@ -75,6 +75,14 @@ export function latestProtocolVersion(protocol: Protocol) {
   return [...protocol.versions].sort((left, right) => right.version_number - left.version_number)[0];
 }
 
-export function protocolVersionLabel(protocol: Protocol, version: ProtocolVersionSummary) {
-  return `${protocol.title} v${version.version_number}`;
+export function protocolVersionLabel(
+  protocol: Protocol,
+  version: ProtocolVersionSummary,
+  t: TranslationFunction,
+) {
+  return t("protocols.versionLabel", {
+    title: protocol.title,
+    version: version.version_number,
+  });
 }
+import type { TranslationFunction } from "@/locales";

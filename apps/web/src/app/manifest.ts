@@ -1,10 +1,12 @@
 import type { MetadataRoute } from "next";
 
+import { DEFAULT_LOCALE, translate } from "@/locales";
+
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Experiment Assistant",
-    short_name: "Experiment Assistant",
-    description: "Plan, run, and preserve structured scientific experiment records.",
+    name: translate(DEFAULT_LOCALE, "app.name"),
+    short_name: translate(DEFAULT_LOCALE, "app.name"),
+    description: translate(DEFAULT_LOCALE, "app.manifestDescription"),
     start_url: "/",
     scope: "/",
     display: "standalone",

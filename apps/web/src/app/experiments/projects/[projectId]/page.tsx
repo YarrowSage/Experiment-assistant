@@ -1,8 +1,7 @@
-import type { Metadata } from "next";
-
 import { ProjectOverview } from "@/features/projects/project-overview";
+import { createLocalizedMetadata } from "@/locales/metadata";
 
-export const metadata: Metadata = { title: "Project Overview" };
+export const metadata = createLocalizedMetadata("projects.overviewTitle");
 
 export default async function Page({
   params,

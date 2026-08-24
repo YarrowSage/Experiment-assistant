@@ -25,6 +25,7 @@ import { useLocalization } from "@/locales/localization-provider";
 
 import { Button, Dialog, Drawer } from "../ui";
 import styles from "./app-shell.module.css";
+import { resolvePageTitleKey } from "./page-title";
 import {
   resolveSecondaryNavigation,
   type SecondaryNavigationConfig,
@@ -104,6 +105,14 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [dialog, setDialog] = useState<"search" | "new" | "settings" | null>(null);
   const [moreOpen, setMoreOpen] = useState(false);
   const secondaryConfig = resolveSecondaryNavigation(pathname);
+  const pageTitleKey = resolvePageTitleKey(pathname);
+
+  useEffect(() => {
+    const applicationName = t("app.name");
+    document.title = pageTitleKey
+      ? `${t(pageTitleKey)} · ${applicationName}`
+      : applicationName;
+  }, [pageTitleKey, t]);
 
   useEffect(() => {
     function openSearch(event: KeyboardEvent) {
@@ -123,11 +132,11 @@ export function AppShell({ children }: { children: ReactNode }) {
         {t("accessibility.skipToContent")}
       </a>
       <header className={styles.header}>
-        <Link aria-label={`Experiment Assistant · ${t("navigation.home")}`} className={styles.brand} href="/">
+        <Link aria-label={`${t("app.name")} · ${t("navigation.home")}`} className={styles.brand} href="/">
           <span aria-hidden="true" className={styles.brandMark}>
             <FlaskConical size={20} strokeWidth={2} />
           </span>
-          <span className={styles.brandText}>Experiment Assistant</span>
+          <span className={styles.brandText}>{t("app.name")}</span>
         </Link>
 
         <nav aria-label={t("accessibility.primaryNavigation")} className={styles.primaryNav}>
@@ -159,7 +168,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <Search aria-hidden="true" size={18} />
             <span className={styles.searchLabel}>{t("common.search")}</span>
             <span aria-hidden="true" className={styles.shortcut}>
-              Ctrl K
+              {t("search.shortcut")}
             </span>
           </button>
           <Button size="medium" onClick={() => setDialog("new")}>

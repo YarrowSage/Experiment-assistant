@@ -19,10 +19,11 @@ async function parseResponse<T>(response: Response): Promise<T> {
     const detail = payload.detail;
     const structured = detail && typeof detail === "object" && !Array.isArray(detail) ? detail : undefined;
     const validation = Array.isArray(detail) ? detail.map((item) => item.msg).filter(Boolean).join(" ") : undefined;
+    const code = structured?.code ?? "evidence_request_failed";
     throw new EvidenceApiError(
-      structured?.message ?? validation ?? (typeof detail === "string" ? detail : undefined) ?? `Evidence request failed with status ${response.status}.`,
+      structured?.message ?? validation ?? (typeof detail === "string" ? detail : undefined) ?? code,
       response.status,
-      structured?.code,
+      code,
     );
   }
   return (await response.json()) as T;
@@ -38,7 +39,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     return await parseResponse<T>(response);
   } catch (error) {
     if (error instanceof EvidenceApiError) throw error;
-    throw new EvidenceApiError("The evidence API is unavailable. Check the local API and try again.", 0);
+    throw new EvidenceApiError("evidence_api_unavailable", 0, "evidence_api_unavailable");
   }
 }
 
@@ -70,7 +71,7 @@ export async function uploadAttachment(runId: string, file: File, runStepId: str
     return await parseResponse<Attachment>(response);
   } catch (error) {
     if (error instanceof EvidenceApiError) throw error;
-    throw new EvidenceApiError("The attachment upload failed before it reached the API.", 0);
+    throw new EvidenceApiError("attachment_upload_unavailable", 0, "attachment_upload_unavailable");
   }
 }
 

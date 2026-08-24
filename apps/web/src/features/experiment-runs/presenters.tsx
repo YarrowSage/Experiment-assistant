@@ -39,7 +39,7 @@ export function ExperimentRunStatusBadge({ status }: { status: ExperimentRunStat
   );
 }
 
-export function formatDateTime(value: string | null, locale: Locale = "en-US", empty = "Not recorded"): string {
+export function formatDateTime(value: string | null, locale: Locale, empty: string): string {
   if (!value) return empty;
   return new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" }).format(
     new Date(value),

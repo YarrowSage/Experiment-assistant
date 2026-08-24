@@ -39,6 +39,17 @@ export function presentError(
     return t("common.localApiUnavailable");
   }
 
+  if (
+    cause instanceof Error &&
+    "status" in cause &&
+    typeof cause.status === "number" &&
+    "code" in cause &&
+    typeof cause.code === "string" &&
+    cause.message === cause.code
+  ) {
+    return t("common.requestFailedWithStatus", { status: cause.status });
+  }
+
   return cause instanceof Error ? cause.message : t(fallbackKey);
 }
 
