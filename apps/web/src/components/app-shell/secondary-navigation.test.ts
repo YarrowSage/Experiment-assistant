@@ -40,12 +40,20 @@ describe("secondary navigation", () => {
   });
 
   it("keeps the accepted Workbenches navigation labels", () => {
+    const navigation = resolveSecondaryNavigation("/workbenches");
     expect(labelsFor("/workbenches")).toEqual([
       "Overview",
       "Animal",
       "Cell",
       "Plate",
       "Chromatography",
+    ]);
+    expect(navigation?.items.map((item) => item.href)).toEqual([
+      "/workbenches",
+      "/workbenches/animal",
+      "/workbenches/cell",
+      "/workbenches/plate",
+      "/workbenches/chromatography",
     ]);
   });
 
