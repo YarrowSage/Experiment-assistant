@@ -2,7 +2,12 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { LOCALE_STORAGE_KEY, presentError, translate } from "./index";
+import {
+  LOCALE_STORAGE_KEY,
+  presentError,
+  translate,
+  type TranslationFunction,
+} from "./index";
 import { LocalizationProvider, useLocalization } from "./localization-provider";
 
 function LocaleHarness() {
@@ -67,10 +72,17 @@ describe("LocalizationProvider", () => {
   });
 
   it("localizes client-side service failures without rewriting API payload messages", () => {
-    const t = (key: Parameters<typeof translate>[1]) => translate("zh-CN", key);
+    const t: TranslationFunction = (key, values) => translate("zh-CN", key, values);
 
     expect(presentError({ status: 0 }, t, "common.somethingWrong")).toBe(
       "无法连接本地服务。请确认 API 已启动，然后重试。",
+    );
+    const fallbackError = Object.assign(new Error("project_request_failed"), {
+      code: "project_request_failed",
+      status: 503,
+    });
+    expect(presentError(fallbackError, t, "common.somethingWrong")).toBe(
+      "请求失败，状态码 503。",
     );
     expect(presentError(new Error("Scientific value was rejected"), t, "common.somethingWrong")).toBe(
       "Scientific value was rejected",

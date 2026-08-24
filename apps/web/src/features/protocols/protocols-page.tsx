@@ -65,7 +65,7 @@ export function ProtocolsPage({ projectId }: { projectId: string }) {
             const latest = latestProtocolVersion(protocol);
             return <Card className={styles.protocolCard} key={protocol.id}>
               <div><Link href={`/experiments/projects/${projectId}/protocols/${protocol.id}`}><h2>{protocol.title}</h2></Link><p>{t("protocols.savedVersions", { count: protocol.versions.length })}</p></div>
-              <div className={styles.protocolMeta}><Badge tone={latest?.status === "published" ? "success" : "neutral"}>{latest ? `v${latest.version_number} · ${t(latest.status === "published" ? "status.published" : "status.draft")}` : t("protocols.noVersion")}</Badge><Link href={`/experiments/projects/${projectId}/protocols/${protocol.id}`}>{t("protocols.open")}</Link></div>
+              <div className={styles.protocolMeta}><Badge tone={latest?.status === "published" ? "success" : "neutral"}>{latest ? t("protocols.versionStatus", { version: latest.version_number, status: t(latest.status === "published" ? "status.published" : "status.draft") }) : t("protocols.noVersion")}</Badge><Link href={`/experiments/projects/${projectId}/protocols/${protocol.id}`}>{t("protocols.open")}</Link></div>
             </Card>;
           })}</div>
         : <Card><EmptyState icon={<BookOpenText size={23} />} title={t("protocols.none")} description={t("protocols.empty")} action={<Button variant="secondary" onClick={() => setCreating(true)}>{t("protocols.new")}</Button>} /></Card>}

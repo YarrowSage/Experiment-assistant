@@ -27,17 +27,18 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
       headers: { "Content-Type": "application/json", ...init?.headers },
     });
   } catch {
-    throw new ProtocolApiError("The Protocol API is unavailable. Check the local API and try again.", 0);
+    throw new ProtocolApiError("protocol_api_unavailable", 0, "protocol_api_unavailable");
   }
   if (!response.ok) {
     const payload = (await response.json().catch(() => ({}))) as ErrorPayload;
     const detail = payload.detail;
     const structured = detail && typeof detail === "object" && !Array.isArray(detail) ? detail : undefined;
     const validation = Array.isArray(detail) ? detail.map((item) => item.msg).filter(Boolean).join(" ") : undefined;
+    const code = structured?.code ?? "protocol_request_failed";
     throw new ProtocolApiError(
-      structured?.message ?? validation ?? (typeof detail === "string" ? detail : undefined) ?? `Protocol request failed with status ${response.status}.`,
+      structured?.message ?? validation ?? (typeof detail === "string" ? detail : undefined) ?? code,
       response.status,
-      structured?.code,
+      code,
     );
   }
   return (await response.json()) as T;

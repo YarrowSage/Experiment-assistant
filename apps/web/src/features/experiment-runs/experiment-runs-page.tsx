@@ -89,8 +89,8 @@ export function ExperimentRunsPage({ projectId }: { projectId?: string }) {
     [projects],
   );
   const protocolVersionNames = useMemo(
-    () => new Map(protocols.flatMap((protocol) => protocol.versions.map((version) => [version.id, protocolVersionLabel(protocol, version)] as const))),
-    [protocols],
+    () => new Map(protocols.flatMap((protocol) => protocol.versions.map((version) => [version.id, protocolVersionLabel(protocol, version, t)] as const))),
+    [protocols, t],
   );
   const contextProject = projects.find((project) => project.id === projectId);
 

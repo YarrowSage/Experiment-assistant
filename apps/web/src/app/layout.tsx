@@ -1,17 +1,18 @@
 import type { Metadata, Viewport } from "next";
 
 import { AppShell } from "@/components/app-shell/app-shell";
+import { DEFAULT_LOCALE, translate } from "@/locales";
 import { LocalizationProvider } from "@/locales/localization-provider";
 
 import "./globals.css";
 
 export const metadata: Metadata = {
-  applicationName: "Experiment Assistant",
+  applicationName: translate(DEFAULT_LOCALE, "app.name"),
   title: {
-    default: "Experiment Assistant",
-    template: "%s · Experiment Assistant",
+    default: translate(DEFAULT_LOCALE, "app.name"),
+    template: translate(DEFAULT_LOCALE, "app.titleTemplate"),
   },
-  description: "A modular assistant for scientific experiment workflows.",
+  description: translate(DEFAULT_LOCALE, "app.description"),
   manifest: "/manifest.webmanifest",
   icons: {
     icon: [
@@ -23,7 +24,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Experiment Assistant",
+    title: translate(DEFAULT_LOCALE, "app.name"),
   },
   formatDetection: { telephone: false },
 };

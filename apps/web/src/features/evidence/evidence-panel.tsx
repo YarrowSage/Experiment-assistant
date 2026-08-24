@@ -63,10 +63,10 @@ function NotesTab({ notes, readOnly, runId, runStepId, onSaved }: { notes: Evide
 }
 
 function AttachmentsTab({ attachments, readOnly, runId, runStepId, onSaved }: { attachments: EvidenceBundle["attachments"]; readOnly: boolean; runId: string; runStepId: string | null; onSaved: () => Promise<void> }) {
-  const { t } = useLocalization();
+  const { locale, t } = useLocalization();
   const [file, setFile] = useState<File | null>(null); const [description, setDescription] = useState(""); const [uploading, setUploading] = useState(false); const [error, setError] = useState<string | null>(null); const [success, setSuccess] = useState<string | null>(null);
   async function submit(event: FormEvent) { event.preventDefault(); if (!file) { setError(t("evidence.fileRequired")); return; } setUploading(true); setError(null); setSuccess(null); try { await uploadAttachment(runId, file, runStepId, description); setSuccess(t("evidence.uploadSuccess", { filename: file.name })); setFile(null); setDescription(""); await onSaved(); } catch (cause) { setError(presentError(cause, t, "evidence.uploadError")); } finally { setUploading(false); } }
-  return <div className={styles.tabStack}>{readOnly ? null : <form className={styles.uploadForm} onSubmit={submit}><Field label={runStepId ? t("evidence.attachStep") : t("evidence.attachRun")}>{(props) => <Input {...props} type="file" onChange={(event) => setFile(event.target.files?.[0] ?? null)} />}</Field><Field label={t("common.description")}>{(props) => <Input {...props} value={description} onChange={(event) => setDescription(event.target.value)} />}</Field>{error ? <p className={styles.requestError} role="alert">{error}</p> : null}{success ? <p className={styles.success} role="status">{success}</p> : null}<Button disabled={uploading} type="submit"><FileUp aria-hidden="true" size={17} />{uploading ? t("evidence.uploading") : t("evidence.uploadFile")}</Button></form>}{attachments.length ? <ul className={styles.attachmentList}>{attachments.map((attachment) => <li key={attachment.id}><Paperclip aria-hidden="true" size={19} /><div><strong>{attachment.original_filename}</strong><span>{formatBytes(attachment.size_bytes)} · {attachment.media_type}</span><small>SHA-256 {attachment.checksum_sha256.slice(0, 12)}…</small></div><a href={attachmentDownloadUrl(attachment)}><Download aria-hidden="true" size={17} />{t("common.download")}</a></li>)}</ul> : <EmptyState icon={<Paperclip size={22} />} title={t("evidence.noAttachments")} description={readOnly ? t("evidence.noAttachmentsReadOnly") : t("evidence.noAttachmentsDescription")} />}</div>;
+  return <div className={styles.tabStack}>{readOnly ? null : <form className={styles.uploadForm} onSubmit={submit}><Field label={runStepId ? t("evidence.attachStep") : t("evidence.attachRun")}>{(props) => <Input {...props} type="file" onChange={(event) => setFile(event.target.files?.[0] ?? null)} />}</Field><Field label={t("common.description")}>{(props) => <Input {...props} value={description} onChange={(event) => setDescription(event.target.value)} />}</Field>{error ? <p className={styles.requestError} role="alert">{error}</p> : null}{success ? <p className={styles.success} role="status">{success}</p> : null}<Button disabled={uploading} type="submit"><FileUp aria-hidden="true" size={17} />{uploading ? t("evidence.uploading") : t("evidence.uploadFile")}</Button></form>}{attachments.length ? <ul className={styles.attachmentList}>{attachments.map((attachment) => <li key={attachment.id}><Paperclip aria-hidden="true" size={19} /><div><strong>{attachment.original_filename}</strong><span>{formatBytes(attachment.size_bytes, locale)} · {attachment.media_type}</span><small>{t("evidence.checksumPreview", { checksum: attachment.checksum_sha256.slice(0, 12) })}</small></div><a href={attachmentDownloadUrl(attachment)}><Download aria-hidden="true" size={17} />{t("common.download")}</a></li>)}</ul> : <EmptyState icon={<Paperclip size={22} />} title={t("evidence.noAttachments")} description={readOnly ? t("evidence.noAttachmentsReadOnly") : t("evidence.noAttachmentsDescription")} />}</div>;
 }
 
 function ActivityTab({ activity }: { activity: EvidenceBundle["activity"] }) {
@@ -75,4 +75,16 @@ function ActivityTab({ activity }: { activity: EvidenceBundle["activity"] }) {
 }
 
 function formatDate(value: string, locale: string) { return new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" }).format(new Date(value)); }
-function formatBytes(value: number) { if (value < 1024) return `${value} B`; if (value < 1024 * 1024) return `${(value / 1024).toFixed(1)} KB`; return `${(value / (1024 * 1024)).toFixed(1)} MB`; }
+function formatBytes(value: number, locale: string) {
+  const [amount, unit] = value < 1024
+    ? [value, "byte"]
+    : value < 1024 * 1024
+      ? [value / 1024, "kilobyte"]
+      : [value / (1024 * 1024), "megabyte"];
+  return new Intl.NumberFormat(locale, {
+    maximumFractionDigits: 1,
+    style: "unit",
+    unit,
+    unitDisplay: "short",
+  }).format(amount);
+}

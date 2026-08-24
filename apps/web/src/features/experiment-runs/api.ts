@@ -32,7 +32,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     });
   } catch {
     throw new ExperimentRunApiError(
-      "The Experiment API is unavailable. Check that the local API is running and try again.",
+      "experiment_run_api_unavailable",
       0,
       "experiment_run_api_unavailable",
     );
@@ -44,15 +44,16 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     const validation = Array.isArray(detail)
       ? detail.map((item) => item.msg).filter(Boolean).join(" ")
       : undefined;
+    const code = structured?.code ?? "experiment_run_request_failed";
     const message =
       structured?.message ??
       validation ??
       (typeof detail === "string" ? detail : undefined) ??
-      `Experiment request failed with status ${response.status}.`;
+      code;
     throw new ExperimentRunApiError(
       message,
       response.status,
-      structured?.code ?? "experiment_run_request_failed",
+      code,
     );
   }
   return (await response.json()) as T;

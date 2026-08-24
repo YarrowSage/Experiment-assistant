@@ -1,8 +1,7 @@
-import type { Metadata } from "next";
-
 import { ExperimentRunsPage } from "@/features/experiment-runs/experiment-runs-page";
+import { createLocalizedMetadata } from "@/locales/metadata";
 
-export const metadata: Metadata = { title: "Project Experiments" };
+export const metadata = createLocalizedMetadata("experiments.projectTitle");
 
 export default async function Page({ params }: { params: Promise<{ projectId: string }> }) {
   const { projectId } = await params;

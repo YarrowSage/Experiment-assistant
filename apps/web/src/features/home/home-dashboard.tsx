@@ -136,7 +136,7 @@ function QuickAction({ icon, label, onClick }: { icon: ReactNode; label: string;
 function ActivityRow({ event }: { event: ActivityEvent }) {
   const { locale, t } = useLocalization();
   const href = event.experiment_run_id ? `/experiments/runs/${event.experiment_run_id}` : event.protocol_id && event.project_id ? `/experiments/projects/${event.project_id}/protocols/${event.protocol_id}` : event.project_id ? `/experiments/projects/${event.project_id}` : null;
-  const content = <><Activity aria-hidden="true" size={17} /><div><strong>{activityMessage(event, t)}</strong><time dateTime={event.created_at}>{formatDateTime(event.created_at, locale)}</time></div>{href ? <ArrowRight aria-hidden="true" size={16} /> : null}</>;
+  const content = <><Activity aria-hidden="true" size={17} /><div><strong>{activityMessage(event, t)}</strong><time dateTime={event.created_at}>{formatDateTime(event.created_at, locale, t("common.notRecorded"))}</time></div>{href ? <ArrowRight aria-hidden="true" size={16} /> : null}</>;
   return <li>{href ? <Link href={href}>{content}</Link> : <div>{content}</div>}</li>;
 }
 

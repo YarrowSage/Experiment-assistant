@@ -86,7 +86,7 @@ export function ProtocolDetail({ projectId, protocolId }: { projectId: string; p
     />
     {error ? <p className={styles.requestError} role="alert">{error}</p> : null}
     <Card className={styles.versionBar}>
-      <Field label={t("protocols.version")}>{(props) => <Select {...props} value={version.id} onChange={(event) => void selectVersion(event.target.value)}>{[...protocol.versions].sort((a, b) => b.version_number - a.version_number).map((item) => <option key={item.id} value={item.id}>v{item.version_number} · {t(item.status === "published" ? "status.published" : "status.draft")}</option>)}</Select>}</Field>
+      <Field label={t("protocols.version")}>{(props) => <Select {...props} value={version.id} onChange={(event) => void selectVersion(event.target.value)}>{[...protocol.versions].sort((a, b) => b.version_number - a.version_number).map((item) => <option key={item.id} value={item.id}>{t("protocols.versionStatus", { version: item.version_number, status: t(item.status === "published" ? "status.published" : "status.draft") })}</option>)}</Select>}</Field>
       <div className={styles.versionState}><Badge tone={editable ? "neutral" : "success"}>{editable ? t("protocols.editableDraft") : t("protocols.immutableRecord")}</Badge>{!editable ? <span><LockKeyhole aria-hidden="true" size={15} />{t("protocols.publishedLocked")}</span> : <span>{t("common.revision", { revision: version.revision })}</span>}</div>
     </Card>
     <div className={styles.stepList}>
